@@ -8,7 +8,7 @@ export default function Login() {
         // (<main className="flex min-h-screen flex-col items-center justify-between p-24"><h1>First Post</h1>;</main>)
 
         <div className="min-h-screen bg-blue-900 text-gray-900 flex justify-center">
-            <div className="max-w-screen-xl m-0 sm:m-10 bg-white shadow-2xl sm:rounded-lg flex justify-center flex-1 shadow-sky-50">
+            <div className="max-w-screen-xl m-0 sm:m-10 bg-white shadow-2xl sm:rounded-lg flex justify-center flex-1 shadow-[0_0px_64px_-12px_rgba(240,249,255,1)]">
                 <div className="lg:w-1/2 xl:w-5/12 p-6 sm:p-12">
                     <div className=" flex flex-col items-center">
                         <Image

@@ -7,8 +7,8 @@ export default function Login() {
     return (
         // (<main className="flex min-h-screen flex-col items-center justify-between p-24"><h1>First Post</h1>;</main>)
 
-        <div className="min-h-screen bg-blue-900 text-gray-900 flex justify-center">
-            <div className="max-w-screen-xl m-0 sm:m-10 bg-white shadow-2xl sm:rounded-lg flex justify-center flex-1 shadow-sky-50">
+        <div className="min-h-screen bg-indigo-200 text-gray-900 flex justify-center">
+            <div className="max-w-screen-xl m-0 sm:m-10 bg-white shadow-2xl sm:rounded-lg flex justify-center flex-1 shadow-[0_0px_64px_-12px_rgba(99,102,241,1)]">
                 <div className="lg:w-1/2 xl:w-5/12 p-6 sm:p-12">
                     <div className=" flex flex-col items-center">
                         <Image
@@ -93,7 +93,7 @@ export default function Login() {
                 <div className="flex-1 relative flex justify-center align-center items-center overflow-hidden bg-indigo-100  hidden lg:flex sm:rounded-tr-lg sm:rounded-br-lg">
                     <div className="relative z-10 w-full h-full">
                         <video className="w-full h-full object-cover" autoPlay muted loop>
-                            <source src='/videos/mountain.mp4' type="video/mp4" />
+                            <source src='/videos/register_stream.mp4' type="video/mp4" />
                             <track
                                 src="/path/to/captions.vtt"
                                 kind="subtitles"
