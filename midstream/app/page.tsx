@@ -13,6 +13,8 @@ export default function Home() {
         <Link href="/login">Login</Link>
         <Link href="/register">Register</Link>
         <Link href="/forgot_pwd">fg pwd</Link>
+        <Link href="/reset_pwd">new pwd</Link>
+        <Link href="/homepage">home</Link>
         <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
           <a
             className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
