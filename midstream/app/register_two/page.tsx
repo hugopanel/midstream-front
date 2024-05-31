@@ -3,7 +3,7 @@ import Link from 'next/link';
 import logo from '../assets/logo.png';
 
 
-export default function Login() {
+export default function RegisterConfirm() {
     return (
         // (<main className="flex min-h-screen flex-col items-center justify-between p-24"><h1>First Post</h1>;</main>)
 
@@ -16,12 +16,12 @@ export default function Login() {
                             alt="logo"
                         />
                     </div>
-                    <div className="mt-12 flex flex-col items-center">
+                    <div className="mt-6 flex flex-col items-center">
                         <h1 className="text-2xl xl:text-3xl font-extrabold">
                             Register
                         </h1>
-                        <div className="w-full flex-1 mt-8">
-                            <div className="flex flex-col items-center">
+                        <div className="w-full flex-1 mt-10">
+                            {/* <div className="flex flex-col items-center">
                                 <button
                                     className="w-full max-w-xs font-bold shadow-sm rounded-lg py-3 bg-indigo-100 text-gray-800 flex items-center justify-center transition-all duration-300 ease-in-out focus:outline-none hover:shadow focus:shadow-sm focus:shadow-outline">
                                     <div className="bg-white p-2 rounded-full">
@@ -57,21 +57,33 @@ export default function Login() {
                                         Register with GitHub
                                     </span>
                                 </button>
-                            </div>
+                            </div> */}
 
-                            <div className="my-12 border-b text-center">
+                            {/* <div className="my-12 border-b text-center">
                                 <div
                                     className="leading-none px-2 inline-block text-sm text-gray-600 tracking-wide font-medium bg-white transform translate-y-1/2">
                                     Or register with e-mail
                                 </div>
-                            </div>
+                            </div> */}
 
                             <div className="mx-auto max-w-xs">
                                 <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white"
-                                    type="email" placeholder="Email" />
+                                    type="text" placeholder="First Name" />
+                                <input
+                                    className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
+                                    type="text" placeholder="Last Name" />
+                                    <input
+                                    className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
+                                    type="text" placeholder="Username" />
+                                <input
+                                    className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
+                                    type="password" placeholder="Password" />
+                                <input
+                                    className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
+                                    type="password" placeholder="Confirm Password" />
                                 <button
-                                    className="mt-5 tracking-wide font-semibold bg-indigo-500 text-gray-100 w-full py-4 rounded-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none">
+                                    className="mt-10 tracking-wide font-semibold bg-indigo-500 text-gray-100 w-full py-4 rounded-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none">
                                     <svg className="w-6 h-6 -ml-2" fill="none" stroke="currentColor" stroke-width="2"
                                         stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
