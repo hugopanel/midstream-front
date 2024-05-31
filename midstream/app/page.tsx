@@ -12,6 +12,7 @@ export default function Home() {
         </p>
         <Link href="/login">Login</Link>
         <Link href="/register">Register</Link>
+        <Link href="/register_two">Register_two</Link>
         <Link href="/forgot_pwd">fg pwd</Link>
         <Link href="/reset_pwd">new pwd</Link>
         <Link href="/homepage">home</Link>
