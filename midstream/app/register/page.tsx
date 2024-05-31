@@ -11,6 +11,7 @@ export default function Login() {
 
     const [email, setEmail] = useState<string>('');
     const [error, setError] = useState<string>('');
+    const [success, setSuccess] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
 
     const router = useRouter();
@@ -36,6 +37,7 @@ export default function Login() {
 
             const data = await response.json();
             console.log('Registration successful:', data);
+            setSuccess(data.message);
         } catch (error: any) {
             setError(error.message);
             console.error('Error during registration:', error);
@@ -126,6 +128,7 @@ export default function Login() {
                                 </button>
                             </form>
                             {error && <p className="text-red-500 mt-4">{error}</p>}
+                            {success && <p className="text-green-500 mt-4">{success}</p>}
                         </div>
                     </div>
                 </div>
