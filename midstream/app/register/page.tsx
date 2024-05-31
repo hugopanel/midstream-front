@@ -30,7 +30,8 @@ export default function Login() {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to register');
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to register');
             }
 
             const data = await response.json();
