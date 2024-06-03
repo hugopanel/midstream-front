@@ -13,7 +13,7 @@ export default function Login() {
     const [confirmpassword, setConfirmpassword] = useState<string>('');
     const [error, setError] = useState<string>('');
     const [success, setSuccess] = useState<string>('');
-    const [loading, setLoading] = useState<boolean>(false);
+    const [loading, setLoading] = useState<string>('');
 
     const router = useRouter();
 
@@ -22,7 +22,7 @@ export default function Login() {
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        setLoading(true);
+        setLoading('Loading...');
         setError('');
 
         console.log(token);
@@ -53,7 +53,7 @@ export default function Login() {
                 setError(error.message);
                 console.error('Error during reset fo the password:', error);
             } finally {
-                setLoading(false);
+                setLoading('');
             }
         }
         else{
@@ -149,6 +149,7 @@ export default function Login() {
                                     </span>
                                 </button>
                             </form>
+                            {loading && <p className="text-red-500 mt-4">{loading}</p>}
                             {error && <p className="text-red-500 mt-4">{error}</p>}
                             {success && <p className="text-green-500 mt-4">{success}</p>}
                         </div>
