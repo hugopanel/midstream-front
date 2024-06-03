@@ -62,7 +62,7 @@ export default function Login() {
                     </div>
                     <div className="mt-12 flex flex-col items-center">
                         <h1 className="text-2xl xl:text-3xl font-extrabold">
-                            Sign up
+                            Sign in
                         </h1>
                         <div className="w-full flex-1 mt-8">
                             <div className="flex flex-col items-center">

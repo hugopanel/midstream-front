@@ -48,6 +48,7 @@ export default function RegisterConfirm() {
                 const data = await response.json();
                 console.log('Registration successful:', data);
                 setSuccess(data.message);
+                setError("");
                 setTimeout(() => {
                     router.push('/login');
                 }, 3000);

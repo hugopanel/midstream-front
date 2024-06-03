@@ -1,9 +1,50 @@
+"use client";
+
+import { ChangeEvent, FormEvent, useState } from 'react';
+
 import Image from "next/image";
 import Link from 'next/link';
 import logo from '../assets/logo.png';
 
-
 export default function Login() {
+
+    const [email, setEmail] = useState<string>('');
+    const [error, setError] = useState<string>('');
+    const [success, setSuccess] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(false);
+
+    const handleSubmit = async (e: FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+
+        try {
+            const response = await fetch('/api/forgot_pwd', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to register');
+            }
+
+            const data = await response.json();
+            console.log('Reset password successful:', data);
+            setSuccess(data.message);
+        } catch (error: any) {
+            setError(error.message);
+            console.error('Error during reset of password:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value);
+        
     return (
         // (<main className="flex min-h-screen flex-col items-center justify-between p-24"><h1>First Post</h1>;</main>)
 
@@ -66,10 +107,10 @@ export default function Login() {
                                 </div>
                             </div>
 
-                            <div className="mx-auto max-w-xs">
+                            <form onSubmit={handleSubmit} className="mx-auto max-w-xs">
                                 <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white"
-                                    type="email" placeholder="Email" />
+                                    type="email" placeholder="Email" value={email} onChange={handleEmailChange}/>
                                 {/* <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
                                     type="password" placeholder="Password" /> */}
@@ -85,8 +126,9 @@ export default function Login() {
                                         Send temp link
                                     </span>
                                 </button>
-
-                            </div>
+                            </form>
+                            {error && <p className="text-red-500 mt-4">{error}</p>}
+                            {success && <p className="text-green-500 mt-4">{success}</p>}
                         </div>
                     </div>
                 </div>

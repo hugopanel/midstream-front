@@ -1,9 +1,69 @@
+"use client";
+
+import { ChangeEvent, FormEvent, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+
 import Image from "next/image";
 import Link from 'next/link';
 import logo from '../assets/logo.png';
 
-
 export default function Login() {
+
+    const [password, setPassword] = useState<string>('');
+    const [confirmpassword, setConfirmpassword] = useState<string>('');
+    const [error, setError] = useState<string>('');
+    const [success, setSuccess] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(false);
+
+    const router = useRouter();
+
+    const searchParams = useSearchParams();
+    const token = searchParams.get('token');
+
+    const handleSubmit = async (e: FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+
+        console.log(token);
+        
+        if(password == confirmpassword){
+            try {
+                const response = await fetch('/api/reset_pwd', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token, password }),
+                });
+    
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to reset password');
+                }
+    
+                const data = await response.json();
+                console.log('Reset of the password successful:', data);
+                setSuccess(data.message);
+                setError("");
+                setTimeout(() => {
+                    router.push('/login');
+                }, 3000);
+            } catch (error: any) {
+                setError(error.message);
+                console.error('Error during reset fo the password:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        else{
+            setError("You must enter the same password twice.");
+        }
+    };
+    
+    const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value);
+    const handleConfirmpasswordChange = (e: ChangeEvent<HTMLInputElement>) => setConfirmpassword(e.target.value);
+    
     return (
         // (<main className="flex min-h-screen flex-col items-center justify-between p-24"><h1>First Post</h1>;</main>)
 
@@ -66,13 +126,13 @@ export default function Login() {
                                 </div>
                             </div>
 
-                            <div className="mx-auto max-w-xs">
+                            <form onSubmit={handleSubmit} className="mx-auto max-w-xs">
                                 <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white"
-                                    type="email" placeholder="New password" />
+                                    type="password" placeholder="New password" value={password} onChange={handlePasswordChange}/>
                                     <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white"
-                                    type="email" placeholder="Confirm password" />
+                                    type="password" placeholder="Confirm password" value={confirmpassword} onChange={handleConfirmpasswordChange}/>
                                 {/* <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
                                     type="password" placeholder="Password" /> */}
@@ -85,11 +145,12 @@ export default function Login() {
                                         <path d="M20 8v6M23 11h-6" />
                                     </svg>
                                     <span className="ml-3">
-                                        Submit & Login
+                                        Change your password
                                     </span>
                                 </button>
-
-                            </div>
+                            </form>
+                            {error && <p className="text-red-500 mt-4">{error}</p>}
+                            {success && <p className="text-green-500 mt-4">{success}</p>}
                         </div>
                     </div>
                 </div>
