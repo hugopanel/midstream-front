@@ -1,31 +1,25 @@
+import { formatDate } from "../format/format";
 export default function Projects() {
-    interface Project {
-        id: number;
-        name: string;
-        beginning_date: string;
-        description: string;
-        progress: number;
-    }
 
     const projects: Project[] = [
         {
             id: 1,
             name: "Material XD Version",
-            beginning_date: "Marketing",
+            beginning_date: new Date('12-12-2022'),
             description: "Material XD Version",
             progress: 25,
         },
         {
             id: 2,
             name: "Add Progress Track",
-            beginning_date: "Innov",
+            beginning_date: new Date('12-11-2023'),
             description: "Add Progress Track",
             progress: 10,
         },
         {
             id: 3,
             name: "Fix Platform Errors",
-            beginning_date: "Commerce",
+            beginning_date: new Date('12-25-2023'),
             description: "Fix Platform Errors",
             progress: 100,
         },
@@ -74,14 +68,23 @@ export default function Projects() {
                                     </div>
                                 </td>
                                 <td className="py-3 px-5 border-b border-blue-gray-50">
-                                    <p className="block antialiased font-sans text-xs font-medium text-blue-gray-600">{project.beginning_date}</p>
+                                    <p className="block antialiased font-sans text-xs font-medium text-blue-gray-600">{formatDate(project.beginning_date)}</p>
                                 </td>
                             </tr>
                         ))}
-                        
                     </tbody>
                 </table>
             </div>
         </div>
     )
 }
+
+export interface Project {
+    id: number;
+    name: string;
+    beginning_date: Date;
+    description: string;
+    progress: number;
+}
+
+
