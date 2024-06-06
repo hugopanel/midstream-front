@@ -37,7 +37,7 @@ export default function Login() {
 
             const data = await response.json();
             console.log('Registration successful:', data);
-            setSuccess(data.message);
+            setSuccess("Please check your e-mail to confirm your account.");
         } catch (error: any) {
             setError(error.message);
             console.error('Error during registration:', error);
