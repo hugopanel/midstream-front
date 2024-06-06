@@ -34,7 +34,7 @@ export default function Login() {
 
             const data = await response.json();
             console.log('Reset password successful:', data);
-            setSuccess(data.message);
+            setSuccess("Please check your email to reset your password.");
         } catch (error: any) {
             setError(error.message);
             console.error('Error during reset of password:', error);
