@@ -1,28 +1,20 @@
 "use client";
-import logo from '../assets/logo2.png';
+import { useState, useEffect } from 'react';
 import { formatSize, formatDate } from "../format/format";
-import NavBar from "../navigation/nav_bare";
-import SideBar from "../navigation/side_bare";
+import NavBar from "../navigation/navBare";
+import SideBar from "../navigation/sideBare";
 
 export default function FileExplorer() {
+    const [selectedPage, setSelectedPage] = useState(1);
+    const [navPages, setNavPages] = useState([1,-1,4,5,6,-1,14]);
+    const [filesShown, setFilesShown] = useState<File[]>([]);
+
     const page = 'files';
 
-    interface File {
-        id: number;
-        name: string;
-        size: number;
-        type: string;
-        date: Date;
-        uploaded_by: string;
-        last_updated: Date;
-        url: string;
-    }
-    const nb_page = 14
-    var nav_files = [1,-1,4,5,6,-1,14]
+    const maxFilesOnPage = 7;
 
-    var selected_page = 1;
     function selectPage(page: number) {
-        selected_page = page;
+        setSelectedPage(page);
     }
 
 
@@ -206,8 +198,348 @@ export default function FileExplorer() {
             uploaded_by: "Loulou",
             last_updated: new Date('10/25/24'),
             url: "https://www.google.com",
-        }
+        },
+        {
+            id: 19,
+            name: "New File",
+            size: 100,
+            type: "Text",
+            date: new Date(),
+            uploaded_by: "Loulou",
+            last_updated: new Date(),
+            url: "https://www.google.com",
+        },
+        {
+            id: 20,
+            name: "New File",
+            size: 100,
+            type: "Text",
+            date: new Date(),
+            uploaded_by: "Loulou",
+            last_updated: new Date(),
+            url: "https://www.google.com",
+        },
+        {
+            id: 21,
+            name: "New File",
+            size: 100,
+            type: "Text",
+            date: new Date(),
+            uploaded_by: "Loulou",
+            last_updated: new Date(),
+            url: "https://www.google.com",
+        },
+        {
+            id: 22,
+            name: "New File",
+            size: 100,
+            type: "Text",
+            date: new Date(),
+            uploaded_by: "Loulou",
+            last_updated: new Date(),
+            url: "https://www.google.com",
+        },
+        {
+            id: 23,
+            name: "New File",
+            size: 100,
+            type: "Text",
+            date: new Date(),
+            uploaded_by: "Loulou",
+            last_updated: new Date(),
+            url: "https://www.google.com",
+        },
+        {
+            id: 24,
+            name: "New File",
+            size: 100,
+            type: "Text",
+            date: new Date(),
+            uploaded_by: "Loulou",
+            last_updated: new Date(),
+            url: "https://www.google.com",
+        },
+        {
+            id: 25,
+            name: "New File",
+            size: 100,
+            type: "Text",
+            date: new Date(),
+            uploaded_by: "Loulou",
+            last_updated: new Date(),
+            url: "https://www.google.com",
+        },
+        {
+            id: 26,
+            name: "New File",
+            size: 100,
+            type: "Text",
+            date: new Date(),
+            uploaded_by: "Loulou",
+            last_updated: new Date(),
+            url: "https://www.google.com",
+        },
+        {
+            id: 27,
+            name: "New File",
+            size: 100,
+            type: "Text",
+            date: new Date(),
+            uploaded_by: "Loulou",
+            last_updated: new Date(),
+            url: "https://www.google.com",
+        },
+        {
+            id: 28,
+            name: "New File",
+            size: 100,
+            type: "Text",
+            date: new Date(),
+            uploaded_by: "Loulou",
+            last_updated: new Date(),
+            url: "https://www.google.com",
+        },        {
+            id: 29,
+            name: "New File",
+            size: 100,
+            type: "Text",
+            date: new Date(),
+            uploaded_by: "Loulou",
+            last_updated: new Date(),
+            url: "https://www.google.com",
+        },        
+        {
+            id: 30,
+            name: "New File",
+            size: 100,
+            type: "Text",
+            date: new Date(),
+            uploaded_by: "Loulou",
+            last_updated: new Date(),
+            url: "https://www.google.com",
+        },
+        {
+            id: 31,
+            name: "Update Documentation",
+            size: 1000000,
+            type: "Excel",
+            date: new Date('09/20/24'),
+            uploaded_by: "Loulou",
+            last_updated: new Date('09/20/24'),
+            url: "https://www.google.com",
+        },
+        {
+            id: 32,
+            name: "Add File Sharing",
+            size: 1800000,
+            type: "PowerPoint",
+            date: new Date('09/25/24'),
+            uploaded_by: "Loulou",
+            last_updated: new Date('09/25/24'),
+            url: "https://www.google.com",
+        },
+        {
+            id: 33,
+            name: "Fix Cross-Browser Compatibility",
+            size: 900000,
+            type: "Word",
+            date: new Date('10/01/24'),
+            uploaded_by: "Loulou",
+            last_updated: new Date('10/01/24'),
+            url: "https://www.google.com",
+        },
+        {
+            id: 34,
+            name: "Add File Versioning",
+            size: 700000,
+            type: "Excel",
+            date: new Date('10/05/24'),
+            uploaded_by: "Loulou",
+            last_updated: new Date('10/05/24'),
+            url: "https://www.google.com",
+        },
+        {
+            id: 35,
+            name: "Implement Drag and Drop",
+            size: 1200000,
+            type: "PowerPoint",
+            date: new Date('10/10/24'),
+            uploaded_by: "Loulou",
+            last_updated: new Date('10/10/24'),
+            url: "https://www.google.com",
+        },
+        {
+            id: 36,
+            name: "Add File Permissions",
+            size: 300000,
+            type: "Word",
+            date: new Date('10/15/24'),
+            uploaded_by: "Loulou",
+            last_updated: new Date('10/15/24'),
+            url: "https://www.google.com",
+        },
+        {
+            id: 37,
+            name: "Fix Mobile Responsiveness",
+            size: 1600000,
+            type: "Excel",
+            date: new Date('10/20/24'),
+            uploaded_by: "Loulou",
+            last_updated: new Date('10/20/24'),
+            url: "https://www.google.com",
+        },
+        {
+            id: 38,
+            name: "Add File Preview",
+            size: 1000000,
+            type: "PowerPoint",
+            date: new Date('10/25/24'),
+            uploaded_by: "Loulou",
+            last_updated: new Date('10/25/24'),
+            url: "https://www.google.com",
+        },
+        {
+            id: 39,
+            name: "New File",
+            size: 100,
+            type: "Text",
+            date: new Date(),
+            uploaded_by: "Loulou",
+            last_updated: new Date(),
+            url: "https://www.google.com",
+        },
+        {
+            id: 40,
+            name: "New File",
+            size: 100,
+            type: "Text",
+            date: new Date(),
+            uploaded_by: "Loulou",
+            last_updated: new Date(),
+            url: "https://www.google.com",
+        },
+        {
+            id: 41,
+            name: "Update Documentation",
+            size: 1000000,
+            type: "Excel",
+            date: new Date('09/20/24'),
+            uploaded_by: "Loulou",
+            last_updated: new Date('09/20/24'),
+            url: "https://www.google.com",
+        },
+        {
+            id: 42,
+            name: "Add File Sharing",
+            size: 1800000,
+            type: "PowerPoint",
+            date: new Date('09/25/24'),
+            uploaded_by: "Loulou",
+            last_updated: new Date('09/25/24'),
+            url: "https://www.google.com",
+        },
+        {
+            id: 43,
+            name: "Fix Cross-Browser Compatibility",
+            size: 900000,
+            type: "Word",
+            date: new Date('10/01/24'),
+            uploaded_by: "Loulou",
+            last_updated: new Date('10/01/24'),
+            url: "https://www.google.com",
+        },
+        {
+            id: 44,
+            name: "Add File Versioning",
+            size: 700000,
+            type: "Excel",
+            date: new Date('10/05/24'),
+            uploaded_by: "Loulou",
+            last_updated: new Date('10/05/24'),
+            url: "https://www.google.com",
+        },
+        {
+            id: 45,
+            name: "Implement Drag and Drop",
+            size: 1200000,
+            type: "PowerPoint",
+            date: new Date('10/10/24'),
+            uploaded_by: "Loulou",
+            last_updated: new Date('10/10/24'),
+            url: "https://www.google.com",
+        },
+        {
+            id: 46,
+            name: "Add File Permissions",
+            size: 300000,
+            type: "Word",
+            date: new Date('10/15/24'),
+            uploaded_by: "Loulou",
+            last_updated: new Date('10/15/24'),
+            url: "https://www.google.com",
+        },
+        {
+            id: 47,
+            name: "Fix Mobile Responsiveness",
+            size: 1600000,
+            type: "Excel",
+            date: new Date('10/20/24'),
+            uploaded_by: "Loulou",
+            last_updated: new Date('10/20/24'),
+            url: "https://www.google.com",
+        },
+        {
+            id: 48,
+            name: "Add File Preview",
+            size: 1000000,
+            type: "PowerPoint",
+            date: new Date('10/25/24'),
+            uploaded_by: "Loulou",
+            last_updated: new Date('10/25/24'),
+            url: "https://www.google.com",
+        },
+        {
+            id: 49,
+            name: "New File",
+            size: 100,
+            type: "Text",
+            date: new Date(),
+            uploaded_by: "Loulou",
+            last_updated: new Date(),
+            url: "https://www.google.com",
+        },
+
     ];
+    
+    const nbFiles = files.length;
+
+    const nbPages = Math.ceil(nbFiles / maxFilesOnPage);
+
+    useEffect(() => {
+        // vérifier que selectedPage ne sorte des bornes
+        if (selectedPage < 1) setSelectedPage(1);
+        if (selectedPage > nbPages) setSelectedPage(nbPages)
+
+        // gère l'affichage des bouttons de navigation
+        let nav = [1];
+        if (selectedPage > 3) {
+            nav.push(-1);
+        }
+        for (let i = selectedPage - 1; i <= selectedPage + 1; i++) {
+            if (i > 1 && i < nbPages) {
+                nav.push(i);
+            }
+        }
+        if (selectedPage < nbPages - 2) {
+            nav.push(-1);
+        }
+        nav.push(nbPages);
+        setNavPages(nav);
+
+        // gère l'affichage des fichiers
+        setFilesShown(files.slice((selectedPage - 1) * maxFilesOnPage, selectedPage * maxFilesOnPage));
+
+    }, [selectedPage]);
 
 
     return (
@@ -287,7 +619,7 @@ export default function FileExplorer() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {files.map((file) => (
+                                        {filesShown.map((file) => (
                                             <tr key={file.id}>
                                                 <td className="py-3 px-5 border-b border-blue-gray-50">
                                                     <div className="gap-4 w-10/12">
@@ -328,23 +660,26 @@ export default function FileExplorer() {
                                     </tbody>
                                 </table>
                                 <div className="flex items-center justify-between mt-10 mb-6">
-                                    <a href="#" className="flex items-center px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md gap-x-2 hover:bg-gray-100">
+
+                                <button className="flex items-center px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md gap-x-2 hover:bg-gray-100" onClick={()=>{
+                                        selectPage(selectedPage - 1);
+                                    }} >
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-5 h-5 rtl:-scale-x-100">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
                                         </svg>
                                         <span>
                                             previous
                                         </span>
-                                    </a>
+                                    </button>
 
                                     <div className="items-center hidden md:flex gap-x-3">
-                                        {nav_files.map((nav, index) => (
+                                        {navPages.map((nav, index) => (
                                             nav === -1 ? (
                                                 <button key={index} className="px-2 py-1 text-sm text-gray-500 rounded-md" disabled>...</button>
                                             ) : (
                                                 <button
                                                     key={index}
-                                                    className={`px-2 py-1 text-sm text-gray-500 rounded-md ${selected_page === nav ? 'bg-blue-100/60' : 'hover:bg-gray-100'}`}
+                                                    className={`px-2 py-1 text-sm text-gray-500 rounded-md ${selectedPage === nav ? 'bg-blue-100/60' : 'hover:bg-gray-100'}`}
                                                     onClick={() => selectPage(nav)}
                                                 >
                                                     {nav}
@@ -353,7 +688,9 @@ export default function FileExplorer() {
                                         ))}
                                     </div>
 
-                                    <a href="#" className="flex items-center px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md gap-x-2 hover:bg-gray-100">
+                                    <button className="flex items-center px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md gap-x-2 hover:bg-gray-100" onClick={()=>{
+                                        selectPage(selectedPage + 1);
+                                    }} >
                                         <span>
                                             Next
                                         </span>
@@ -361,7 +698,7 @@ export default function FileExplorer() {
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-5 h-5 rtl:-scale-x-100">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
                                         </svg>
-                                    </a>
+                                    </button>
                                 </div>
                             </div>
 
@@ -370,4 +707,14 @@ export default function FileExplorer() {
                 </div>
             </div>
         </div>);
+}
+export interface File {
+    id: number;
+    name: string;
+    size: number;
+    type: string;
+    date: Date;
+    uploaded_by: string;
+    last_updated: Date;
+    url: string;
 }

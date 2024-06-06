@@ -2,8 +2,8 @@ import Tasks from "./tasks";
 import Files from "./files";
 import Projects from "./projects";
 import { Project } from "./projects";
-import SideBar from "../navigation/side_bare";
-import NavBar from "../navigation/nav_bare";
+import SideBar from "../navigation/sideBare";
+import NavBar from "../navigation/navBare";
 
 export default function HomePage() {
   const page = 'dashboard';
