@@ -4,7 +4,7 @@ export async function POST(request: NextRequest) {
     try {
         const { email } = await request.json();
 
-        const response = await fetch('http://localhost:5101/api/account/register', {
+        const response = await fetch('http://localhost:5101/auth/register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

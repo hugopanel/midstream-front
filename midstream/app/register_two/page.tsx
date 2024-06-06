@@ -47,7 +47,7 @@ export default function RegisterConfirm() {
     
                 const data = await response.json();
                 console.log('Registration successful:', data);
-                setSuccess(data.message);
+                setSuccess("You are registered ! You are redirected to the login page, please log in.");
                 setError("");
                 setTimeout(() => {
                     router.push('/login');

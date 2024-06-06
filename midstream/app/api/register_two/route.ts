@@ -6,14 +6,14 @@ export async function POST(request: NextRequest) {
     try {
         const { token, username, firstname, lastname, password } = await request.json();
 
-        const url_to_fetch = `http://localhost:5101/api/account/confirm?token=${token}`
+        const url_to_fetch = `http://localhost:5101/auth/ConfirmRegistration?token=${token}`
 
         const response = await fetch(url_to_fetch, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ username, firstname, lastname, password }),
+            body: JSON.stringify({ token, username, firstname, lastname, password }),
         });
 
         if (!response.ok) {
