@@ -68,7 +68,7 @@ export default function Login() {
                         <div className="w-full flex-1 mt-8">
                             <div className="flex flex-col items-center">
                                 <button
-                                    className="w-full max-w-xs font-bold shadow-sm rounded-lg py-3 bg-indigo-100 text-gray-800 flex items-center justify-center transition-all duration-300 ease-in-out focus:outline-none hover:shadow hover:bg-indigo-200 focus:shadow-sm focus:shadow-outline">
+                                    className="w-full max-w-xs font-bold shadow-sm rounded-lg py-3 bg-indigo-100 text-gray-800 flex items-center justify-center transition-all duration-300 ease-in-out focus:outline-none hover:shadow focus:shadow-sm focus:shadow-outline">
                                     <div className="bg-white p-2 rounded-full">
                                         <svg className="w-4" viewBox="0 0 533.5 544.3">
                                             <path
@@ -91,7 +91,7 @@ export default function Login() {
                                 </button>
 
                                 <button
-                                    className="w-full max-w-xs font-bold shadow-sm rounded-lg py-3 bg-indigo-100 text-gray-800 flex items-center justify-center transition-all duration-300 ease-in-out focus:outline-none hover:shadow hover:bg-indigo-200 focus:shadow-sm focus:shadow-outline mt-5">
+                                    className="w-full max-w-xs font-bold shadow-sm rounded-lg py-3 bg-indigo-100 text-gray-800 flex items-center justify-center transition-all duration-300 ease-in-out focus:outline-none hover:shadow focus:shadow-sm focus:shadow-outline mt-5">
                                     <div className="bg-white p-1 rounded-full">
                                         <svg className="w-6" viewBox="0 0 32 32">
                                             <path fillRule="evenodd"
@@ -114,15 +114,14 @@ export default function Login() {
                             <form onSubmit={handleSubmit} className="mx-auto max-w-xs">
                                 <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white"
-                                    type="email" placeholder="Email" />
-                                    
+                                    type="email" placeholder="Email" value={email} onChange={handleEmailChange} />
                                 <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
                                     type="password" placeholder="Password" value={password} onChange={handlePasswordChange}/>
                                 <button
-                                    className="mt-5 tracking-wide font-semibold bg-gradient-to-tl from-blue-500 to-indigo-500 text-gray-100 w-full py-4 rounded-lg hover:bg-gradient-to-tr from-blue-500 to-indigo-500 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none">
-                                    <svg className="w-6 h-6 -ml-2" fill="none" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round">
+                                    className="mt-5 tracking-wide font-semibold bg-indigo-500 text-gray-100 w-full py-4 rounded-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none">
+                                    <svg className="w-6 h-6 -ml-2" fill="none" stroke="currentColor" strokeWidth="2"
+                                        strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
                                         <circle cx="8.5" cy="7" r="4" />
                                         <path d="M20 8v6M23 11h-6" />
@@ -134,10 +133,6 @@ export default function Login() {
                             </form>
                             {loading && <p className="text-grey-500 mt-4">{loading}</p>}
                             {error && <p className="text-red-500 mt-4">{error}</p>}                            
-
-                                <Link href="/forgot_pwd" className="font-semibold text-blue-700 hover:text-indigo-500 flex items-center justify-center mt-5">Forgot your password ?</Link>
-
-                            </div>
                         </div>
                     </div>
                 </div>
