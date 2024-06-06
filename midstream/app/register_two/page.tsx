@@ -1,9 +1,75 @@
+"use client";
+
+import { ChangeEvent, FormEvent, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+
 import Image from "next/image";
 import Link from 'next/link';
 import logo from '../assets/logo.png';
 
-
 export default function RegisterConfirm() {
+
+    const [username, setUsername] = useState<string>('');
+    const [firstname, setFirstname] = useState<string>('');
+    const [lastname, setLastname] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
+    const [confirmpassword, setConfirmpassword] = useState<string>('');
+    const [error, setError] = useState<string>('');
+    const [success, setSuccess] = useState<string>('');
+    const [loading, setLoading] = useState<string>('');
+
+    const router = useRouter();
+
+    const searchParams = useSearchParams();
+    const token = searchParams.get('token');
+
+    const handleSubmit = async (e: FormEvent) => {
+        e.preventDefault();
+        setLoading('Loading...');
+        setError('');
+
+        console.log(token);
+        
+        if(password == confirmpassword){
+            try {
+                const response = await fetch('/api/register_two', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token, username, firstname, lastname, password }),
+                });
+    
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to register');
+                }
+    
+                const data = await response.json();
+                console.log('Registration successful:', data);
+                setSuccess("You are registered ! You are redirected to the login page, please log in.");
+                setError("");
+                setTimeout(() => {
+                    router.push('/login');
+                }, 3000);
+            } catch (error: any) {
+                setError(error.message);
+                console.error('Error during registration:', error);
+            } finally {
+                setLoading('');
+            }
+        }
+        else{
+            setError("You must enter the same password twice.");
+        }
+    };
+
+    const handleUsernameChange = (e: ChangeEvent<HTMLInputElement>) => setUsername(e.target.value);
+    const handleFirstnameChange = (e: ChangeEvent<HTMLInputElement>) => setFirstname(e.target.value);
+    const handleLastnameChange = (e: ChangeEvent<HTMLInputElement>) => setLastname(e.target.value);
+    const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value);
+    const handleConfirmpasswordChange = (e: ChangeEvent<HTMLInputElement>) => setConfirmpassword(e.target.value);
+    
     return (
         // (<main className="flex min-h-screen flex-col items-center justify-between p-24"><h1>First Post</h1>;</main>)
 
@@ -66,26 +132,26 @@ export default function RegisterConfirm() {
                                 </div>
                             </div> */}
 
-                            <div className="mx-auto max-w-xs">
+                            <form onSubmit={handleSubmit} className="mx-auto max-w-xs">
                                 <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white"
-                                    type="text" placeholder="First Name" />
+                                    type="text" placeholder="First Name" value={firstname} onChange={handleFirstnameChange}/>
                                 <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
-                                    type="text" placeholder="Last Name" />
+                                    type="text" placeholder="Last Name" value={lastname} onChange={handleLastnameChange}/>
                                     <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
-                                    type="text" placeholder="Username" />
+                                    type="text" placeholder="Username" value={username} onChange={handleUsernameChange}/>
                                 <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
-                                    type="password" placeholder="Password" />
+                                    type="password" placeholder="Password" value={password} onChange={handlePasswordChange}/>
                                 <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
-                                    type="password" placeholder="Confirm Password" />
+                                    type="password" placeholder="Confirm Password" value={confirmpassword} onChange={handleConfirmpasswordChange}/>
                                 <button
                                     className="mt-10 tracking-wide font-semibold bg-indigo-500 text-gray-100 w-full py-4 rounded-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none">
                                     <svg className="w-6 h-6 -ml-2" fill="none" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round">
+                                        stroke-linecap="round" strokeLinejoin="round">
                                         <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
                                         <circle cx="8.5" cy="7" r="4" />
                                         <path d="M20 8v6M23 11h-6" />
@@ -94,8 +160,10 @@ export default function RegisterConfirm() {
                                         Register
                                     </span>
                                 </button>
-
-                            </div>
+                            </form>
+                            {loading && <p className="text-grey-500 mt-4">{loading}</p>}
+                            {error && <p className="text-red-500 mt-4">{error}</p>}
+                            {success && <p className="text-green-500 mt-4">{success}</p>}
                         </div>
                     </div>
                 </div>

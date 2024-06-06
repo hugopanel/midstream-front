@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { url } from 'inspector';
+
 export async function POST(request: NextRequest) {
     try {
         const { email } = await request.json();
 
-        const response = await fetch('http://localhost:5101/auth/register', {
+        const response = await fetch("http://localhost:5101/auth/ResetPassword", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -14,7 +16,7 @@ export async function POST(request: NextRequest) {
 
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.message || 'Failed to register');
+            throw new Error(errorData.message || "Failed to send a mail.");
         }
 
         const data = await response.json();

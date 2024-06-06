@@ -12,13 +12,13 @@ export default function Login() {
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [error, setError] = useState<string>('');
-    const [loading, setLoading] = useState<boolean>(false);
+    const [loading, setLoading] = useState<string>('');
 
     const router = useRouter();
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        setLoading(true);
+        setLoading('Loading...');
         setError('');
 
         try {
@@ -31,7 +31,8 @@ export default function Login() {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to login');
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to sign in');
             }
 
             const data = await response.json();
@@ -41,7 +42,7 @@ export default function Login() {
             setError(error.message);
             console.error('Error logging in:', error);
         } finally {
-            setLoading(false);
+            setLoading('');
         }
     };
 
@@ -130,6 +131,9 @@ export default function Login() {
                                         Sign In
                                     </span>
                                 </button>
+                            </form>
+                            {loading && <p className="text-grey-500 mt-4">{loading}</p>}
+                            {error && <p className="text-red-500 mt-4">{error}</p>}                            
 
                                 <Link href="/forgot_pwd" className="font-semibold text-blue-700 hover:text-indigo-500 flex items-center justify-center mt-5">Forgot your password ?</Link>
 
