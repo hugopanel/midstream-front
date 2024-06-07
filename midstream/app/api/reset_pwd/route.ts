@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     try {
         const { token, password } = await request.json();
 
-        const url_to_fetch = `http://localhost:5101/api/account/confirm_reset?token=${token}`
+        const url_to_fetch = `http://localhost:5101/auth/ConfirmResetPassword?token=${token}`
 
         const response = await fetch(url_to_fetch, {
             method: 'POST',

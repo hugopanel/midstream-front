@@ -149,7 +149,7 @@ export default function Login() {
                                     </span>
                                 </button>
                             </form>
-                            {loading && <p className="text-red-500 mt-4">{loading}</p>}
+                            {loading && <p className="text-grey-500 mt-4">{loading}</p>}
                             {error && <p className="text-red-500 mt-4">{error}</p>}
                             {success && <p className="text-green-500 mt-4">{success}</p>}
                         </div>
