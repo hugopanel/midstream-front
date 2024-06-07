@@ -5,9 +5,10 @@ import NavBar from "../navigation/navBare";
 import SideBar from "../navigation/sideBare";
 
 export default function FileExplorer() {
-    const [selectedPage, setSelectedPage] = useState(1);
-    const [navPages, setNavPages] = useState([1,-1,4,5,6,-1,14]);
+    const [selectedPage, setSelectedPage] = useState<number>(1);
+    const [navPages, setNavPages] = useState<number[]>([1,-1,4,5,6,-1,14]);
     const [filesShown, setFilesShown] = useState<File[]>([]);
+    const [search, setSearch] = useState<string>('')
 
     const page = 'files';
 
@@ -511,11 +512,22 @@ export default function FileExplorer() {
 
     ];
     
-    const nbFiles = files.length;
 
-    const nbPages = Math.ceil(nbFiles / maxFilesOnPage);
+
+
+
+    const updateSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearch(event.target.value);
+        setSelectedPage(1);
+      };
 
     useEffect(() => {
+        const filteredFiles = files.filter((file) => {return file.name.toLowerCase().includes(search.toLowerCase())})
+
+        var nbPages = Math.ceil(filteredFiles.length / maxFilesOnPage);
+        if (nbPages < 1) {
+            nbPages = 1;
+        }
         // vérifier que selectedPage ne sorte des bornes
         if (selectedPage < 1) setSelectedPage(1);
         if (selectedPage > nbPages) setSelectedPage(nbPages)
@@ -533,14 +545,12 @@ export default function FileExplorer() {
         if (selectedPage < nbPages - 2) {
             nav.push(-1);
         }
-        nav.push(nbPages);
+        if (nbPages > 1) nav.push(nbPages);
         setNavPages(nav);
 
         // gère l'affichage des fichiers
-        setFilesShown(files.slice((selectedPage - 1) * maxFilesOnPage, selectedPage * maxFilesOnPage));
-
-    }, [selectedPage]);
-
+        setFilesShown(filteredFiles.slice((selectedPage - 1) * maxFilesOnPage, selectedPage * maxFilesOnPage));
+    }, [selectedPage,search]);
 
     return (
         <div className="min-h-screen bg-gradient-to-r from-indigo-500 from-5% via-blue-300 via-30% to-cyan-50 to-95%">
@@ -562,7 +572,7 @@ export default function FileExplorer() {
                                 </div>
                                 <div className="pt-2 relative mx-auto text-gray-600">
                                     <input className="border-2 border-gray-300 bg-white h-10 px-5 pr-16 rounded-lg text-sm focus:outline-none"
-                                        type="search" name="search" placeholder="Search" />
+                                        type="search" name="search" placeholder="Search" onChange={updateSearch} />
                                     <button type="submit" className="absolute right-0 top-0 mt-5 mr-4">
                                         <svg className="text-gray-600 h-4 w-4 fill-current enable-background:new 0 0 56.966 56.966;" xmlns="http://www.w3.org/2000/svg"
                                             version="1.1" id="Capa_1" x="0px" y="0px"
