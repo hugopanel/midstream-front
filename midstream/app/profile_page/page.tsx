@@ -16,15 +16,19 @@ export default function Login() {
     const [currentPassword, setCurrentPassword] = useState<string>('');
     const [newPassword, setNewPassword] = useState<string>('');
     const [confirmPassword, setConfirmPassword] = useState<string>('');
+    const [colour, setColour] = useState("#000000");
     const [id, setId] = useState<string>('');
     const [errorInfo, setErrorInfo] = useState<string>('');
     const [errorEmail, setErrorEmail] = useState<string>('');
+    const [errorAvatar, setErrorAvatar] = useState<string>('');
     const [errorPassword, setErrorPassword] = useState<string>('');
     const [loadingInfo, setLoadingInfo] = useState<string>('');
     const [loadingEmail, setLoadingEmail] = useState<string>('');
+    const [loadingAvatar, setLoadingAvatar] = useState<string>('');
     const [loadingPassword, setLoadingPassword] = useState<string>('');
     const [successInfo, setSuccessInfo] = useState<string>('');
     const [successEmail, setSuccessEmail] = useState<string>('');
+    const [successAvatar, setSuccessAvatar] = useState<string>('');
     const [successPassword, setSuccessPassword] = useState<string>('');
 
     const router = useRouter();
@@ -54,6 +58,13 @@ export default function Login() {
             setUsername(data.username);
             setFirstName(data.firstName);
             setLastName(data.lastName);
+            setColour(data.colour);
+            const radioButton = document.getElementById(data.avatar) as HTMLInputElement | null;
+                    
+            if (radioButton && radioButton.id == data.avatar) {
+                console.log("found");
+                radioButton.checked = true;
+            }
             setId(data.id);
         } catch (error: any) {
             setErrorInfo(error.message);
@@ -166,9 +177,55 @@ export default function Login() {
         
     };
 
+    const updateAvatar = async (e: FormEvent) => {
+        e.preventDefault();
+        setLoadingPassword('Loading...');
+        setErrorPassword('');
+        
+        const token = localStorage.getItem('token');
+        const selectedOption = document.querySelector('input[name="option"]:checked');
+
+        if (selectedOption) {
+            console.log('Selected option:', selectedOption.id);
+            const avatar = selectedOption.id;
+            console.log(avatar);
+            console.log(colour);
+            try {
+                const response = await fetch('/api/update_avatar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token, avatar, colour }),
+                });
+    
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to sign in');
+                }
+    
+                const data = await response.json();
+                console.log(data.token);
+                localStorage.setItem('token', data.token);
+                setSuccessAvatar('Avatar updated.');
+            } catch (error: any) {
+                setErrorAvatar(error.message);
+                console.error('Error logging in:', error);
+            } finally {
+                setLoadingAvatar('');
+            }
+        } else {
+            console.log('No option selected');
+        }
+               
+    };
+
+    
+
 
     useEffect(() => {
         Load();
+        //Avatar();
     }, []);
 
     const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value);
@@ -178,6 +235,7 @@ export default function Login() {
     const handleCurrentPasswordChange = (e: ChangeEvent<HTMLInputElement>) => setCurrentPassword(e.target.value);
     const handleNewPasswordChange = (e: ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value);
     const handleConfirmPasswordChange = (e: ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value);
+    const handleColourChange = (e: ChangeEvent<HTMLInputElement>) => setColour(e.target.value);
 
     
     return (
@@ -305,7 +363,7 @@ export default function Login() {
                                     Customize your Avatar
                                 </div>
                             </div>
-                            <div className="mx-auto max-w-xs flex flex-col align-center items-center justify-center mb-32">
+                            <form onSubmit={updateAvatar} className="mx-auto max-w-xs flex flex-col align-center items-center justify-center mb-32">
 
                                 <div className="grid w-[40rem] grid-cols-5 gap-2 rounded-xl bg-gray-50 p-2 mt-10">
                                     <div>
@@ -320,7 +378,7 @@ export default function Login() {
 
                                     <div>
                                         <input type="radio" name="option" id="2" value="2" className="peer hidden" />
-                                        <label htmlFor="2" className="flex justify-center items-center cursor-pointer select-none rounded-xl p-2 peer-checked:bg-gradient-to-tl from-blue-500 to-indigo-500 peer-checked:font-bold peer-checked:text-white">
+                                        <label htmlFor="2"className="flex justify-center items-center cursor-pointer select-none rounded-xl p-2 peer-checked:bg-gradient-to-tl from-blue-500 to-indigo-500 peer-checked:font-bold peer-checked:text-white">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-10 h-10 text-inherit">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
                                             </svg>
@@ -342,7 +400,7 @@ export default function Login() {
 
                                     <div>
                                         <input type="radio" name="option" id="4" value="4" className="peer hidden" />
-                                        <label htmlFor="4" className="flex justify-center items-center cursor-pointer select-none rounded-xl p-2 peer-checked:bg-gradient-to-tl from-blue-500 to-indigo-500 peer-checked:font-bold peer-checked:text-white">
+                                        <label htmlFor="4"className="flex justify-center items-center cursor-pointer select-none rounded-xl p-2 peer-checked:bg-gradient-to-tl from-blue-500 to-indigo-500 peer-checked:font-bold peer-checked:text-white">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-10 h-10 text-inherit">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
                                             </svg>
@@ -363,7 +421,8 @@ export default function Login() {
                                 </div>
 
                                 <div className="mt-10">
-                                    <input type="color" className="p-1  w-60 h-10 block bg-gray-50 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none" id="hs-color-input" title="Choose your color"></input>
+                                    <input type="color" className="p-1  w-60 h-10 block bg-gray-50 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none" id="hs-color-input" value={colour}
+        onChange={handleColourChange} title="Choose your color"></input>
                                 </div>
                                 <button
                                     className="mt-20 tracking-wide font-semibold bg-gradient-to-tl from-blue-500 to-indigo-500 text-gray-100 w-full py-4 rounded-lg hover:bg-gradient-to-tr from-blue-500 to-indigo-500 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none">
@@ -377,8 +436,10 @@ export default function Login() {
                                         Customize
                                     </span>
                                 </button>
-
-                            </div>
+                                {loadingAvatar && <p className="text-grey-500 mt-4">{loadingAvatar}</p>}
+                                {errorAvatar && <p className="text-red-500 mt-4">{errorAvatar}</p>}
+                                {successAvatar && <p className="text-green-500 mt-4">{successAvatar}</p>}
+                            </form>
                             <div className="my-12 border-b text-center">
                                 <div
                                     className="leading-none px-2 inline-block text-lg text-gray-600 tracking-wide font-medium bg-white transform translate-y-1/2">
@@ -415,7 +476,7 @@ export default function Login() {
 
                             </form>
 
-                            <Link href="/forgot_pwd" className="font-semibold text-blue-700 hover:text-indigo-500 flex text-center items-center justify-center mt-5">Any questions ? Contact our team via the email midstream42@gmail.com</Link>
+                            <Link href="mailto:midstream42@gmail.com" className="font-semibold text-blue-700 hover:text-indigo-500 flex text-center items-center justify-center mt-5">Any questions ? Contact our team via the email midstream42@gmail.com</Link>
                         </div>
                     </div>
                 </div>
