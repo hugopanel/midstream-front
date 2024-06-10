@@ -15,18 +15,23 @@ export default function Login() {
     const [username, setUsername] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [id, setId] = useState<string>('');
-    const [error, setError] = useState<string>('');
-    const [loading, setLoading] = useState<string>('');
+    const [errorInfo, setErrorInfo] = useState<string>('');
+    const [errorEmail, setErrorEmail] = useState<string>('');
+    const [errorPassword, setErrorPassword] = useState<string>('');
+    const [loadingInfo, setLoadingInfo] = useState<string>('');
+    const [loadingEmail, setLoadingEmail] = useState<string>('');
+    const [loadingPassword, setLoadingPassword] = useState<string>('');
+    const [successInfo, setSuccessInfo] = useState<string>('');
+    const [successEmail, setSuccessEmail] = useState<string>('');
+    const [successPassword, setSuccessPassword] = useState<string>('');
 
     const router = useRouter();
 
     const Load = async () => {
-        setError('');
+        setErrorInfo('');
 
         const token = localStorage.getItem('token');
 
-        
-        
         try {
             const response = await fetch('/api/profile_page', {
                 method: 'POST',
@@ -49,17 +54,19 @@ export default function Login() {
             setLastName(data.lastName);
             setId(data.id);
         } catch (error: any) {
-            setError(error.message);
+            setErrorInfo(error.message);
             console.error('Error getting the info :', error);
         } finally {
-            setLoading('');
+            setLoadingInfo('');
         }
     };
 
     const updateInfo = async (e: FormEvent) => {
         e.preventDefault();
-        setLoading('Loading...');
-        setError('');
+        setLoadingInfo('Loading...');
+        setErrorInfo('');
+
+        const token = localStorage.getItem('token');
 
         try {
             const response = await fetch('/api/update_info', {
@@ -67,7 +74,7 @@ export default function Login() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ id, username, firstName, lastName }),
+                body: JSON.stringify({ token, username, firstName, lastName }),
             });
 
             if (!response.ok) {
@@ -78,20 +85,21 @@ export default function Login() {
             const data = await response.json();
             localStorage.removeItem("token");
             localStorage.setItem('token', data.token);
-            
-            console.log('Update of the info successful', data);
+            setSuccessInfo('Information updated.');
         } catch (error: any) {
-            setError(error.message);
-            console.error('Error logging in:', error);
+            setErrorInfo(error.message);
+            console.error('Error during update of the info:', error);
         } finally {
-            setLoading('');
+            setLoadingInfo('');
         }
     };
 
     const updateEmail = async (e: FormEvent) => {
         e.preventDefault();
-        setLoading('Loading...');
-        setError('');
+        setLoadingEmail('Loading...');
+        setErrorEmail('');
+
+        const token = localStorage.getItem('token');
 
         try {
             const response = await fetch('/api/update_email', {
@@ -99,7 +107,7 @@ export default function Login() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ id, email }),
+                body: JSON.stringify({ token, email }),
             });
 
             if (!response.ok) {
@@ -109,15 +117,47 @@ export default function Login() {
 
             const data = await response.json();
             localStorage.setItem('token', data.token);
-            console.log('Login successful:', data);
-            router.push('/homepage');
+            setSuccessEmail('Email updated.');
         } catch (error: any) {
-            setError(error.message);
+            setErrorEmail(error.message);
             console.error('Error logging in:', error);
         } finally {
-            setLoading('');
+            setLoadingEmail('');
         }
     };
+
+    const updatePassword = async (e: FormEvent) => {
+        e.preventDefault();
+        setLoadingPassword('Loading...');
+        setErrorPassword('');
+
+        const token = localStorage.getItem('token');
+
+        try {
+            const response = await fetch('/api/update_email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ token, email }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to sign in');
+            }
+
+            const data = await response.json();
+            localStorage.setItem('token', data.token);
+            console.log('Email updated successfully:', data);
+        } catch (error: any) {
+            setErrorEmail(error.message);
+            console.error('Error logging in:', error);
+        } finally {
+            setLoadingEmail('');
+        }
+    };
+
 
     useEffect(() => {
         Load();
@@ -216,7 +256,11 @@ export default function Login() {
                                         Edit
                                     </span>
                                 </button>
+                                {loadingInfo && <p className="text-grey-500 mt-4">{loadingInfo}</p>}
+                                {errorInfo && <p className="text-red-500 mt-4">{errorInfo}</p>}
+                                {successInfo && <p className="text-green-500 mt-4">{successInfo}</p>}
                             </form>
+                            
                             <div className="my-12 border-b text-center">
                                 <div
                                     className="leading-none px-2 inline-block text-lg text-gray-600 tracking-wide font-medium bg-white transform translate-y-1/2">
@@ -240,6 +284,9 @@ export default function Login() {
                                         Update
                                     </span>
                                 </button>
+                                {loadingEmail && <p className="text-grey-500 mt-4">{loadingEmail}</p>}
+                                {errorEmail && <p className="text-red-500 mt-4">{errorEmail}</p>}
+                                {successEmail && <p className="text-green-500 mt-4">{successEmail}</p>}
                             </form>
                             <div className="my-12 border-b text-center">
                                 <div
@@ -328,7 +375,7 @@ export default function Login() {
                                 </div>
                             </div>
 
-                            <div className="mx-auto max-w-xs mb-32">
+                            <form onSubmit={updatePassword} className="mx-auto max-w-xs mb-32">
                                 <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
                                     type="password" placeholder="Current Password" />
@@ -353,7 +400,7 @@ export default function Login() {
 
                                 {/* <Link href="/forgot_pwd" className="font-semibold text-blue-700 hover:text-indigo-500 flex items-center justify-center mt-5">Forgot your password ?</Link> */}
 
-                            </div>
+                            </form>
                         </div>
                     </div>
                 </div>

@@ -4,7 +4,7 @@ import { url } from 'inspector';
 
 export async function POST(request: NextRequest) {
     try {
-        const { id, email } = await request.json();
+        const { token, email } = await request.json();
 
         const url_to_fetch = `http://localhost:5101/auth/UpdateEmail`
 
@@ -12,8 +12,9 @@ export async function POST(request: NextRequest) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
             },
-            body: JSON.stringify({ id, email }),
+            body: JSON.stringify({ email }),
         });
 
         if (!response.ok) {
