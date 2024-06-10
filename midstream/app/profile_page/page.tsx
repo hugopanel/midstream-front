@@ -13,7 +13,9 @@ export default function Login() {
     const [firstName, setFirstName] = useState<string>('');
     const [lastName, setLastName] = useState<string>('');
     const [username, setUsername] = useState<string>('');
-    const [password, setPassword] = useState<string>('');
+    const [currentPassword, setCurrentPassword] = useState<string>('');
+    const [newPassword, setNewPassword] = useState<string>('');
+    const [confirmPassword, setConfirmPassword] = useState<string>('');
     const [id, setId] = useState<string>('');
     const [errorInfo, setErrorInfo] = useState<string>('');
     const [errorEmail, setErrorEmail] = useState<string>('');
@@ -132,30 +134,36 @@ export default function Login() {
         setErrorPassword('');
 
         const token = localStorage.getItem('token');
+        if (newPassword == confirmPassword){
+            try {
+                const response = await fetch('/api/update_password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token, currentPassword, newPassword }),
+                });
 
-        try {
-            const response = await fetch('/api/update_email', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ token, email }),
-            });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to sign in');
+                }
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to sign in');
+                const data = await response.json();
+                setCurrentPassword('');
+                setNewPassword('');
+                setConfirmPassword('');
+                setSuccessPassword('Password updated successfully.');
+            } catch (error: any) {
+                setErrorPassword(error.message);
+                console.error('Error logging in:', error);
+            } finally {
+                setLoadingPassword('');
             }
-
-            const data = await response.json();
-            localStorage.setItem('token', data.token);
-            console.log('Email updated successfully:', data);
-        } catch (error: any) {
-            setErrorEmail(error.message);
-            console.error('Error logging in:', error);
-        } finally {
-            setLoadingEmail('');
+        }else{
+            setErrorPassword("You must enter the same password twice.");
         }
+        
     };
 
 
@@ -167,7 +175,9 @@ export default function Login() {
     const handleUsernameChange = (e: ChangeEvent<HTMLInputElement>) => setUsername(e.target.value);
     const handleFirstNameChange = (e: ChangeEvent<HTMLInputElement>) => setFirstName(e.target.value);
     const handleLastNameChange = (e: ChangeEvent<HTMLInputElement>) => setLastName(e.target.value);
-    const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value);
+    const handleCurrentPasswordChange = (e: ChangeEvent<HTMLInputElement>) => setCurrentPassword(e.target.value);
+    const handleNewPasswordChange = (e: ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value);
+    const handleConfirmPasswordChange = (e: ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value);
 
     
     return (
@@ -378,13 +388,13 @@ export default function Login() {
                             <form onSubmit={updatePassword} className="mx-auto max-w-xs mb-32">
                                 <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
-                                    type="password" placeholder="Current Password" />
+                                    type="password" placeholder="Current Password" value={currentPassword} onChange={handleCurrentPasswordChange} />
                                 <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
-                                    type="password" placeholder="New Password" />
+                                    type="password" placeholder="New Password" value={newPassword} onChange={handleNewPasswordChange}/>
                                 <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
-                                    type="password" placeholder="Confirm Password" />
+                                    type="password" placeholder="Confirm Password" value={confirmPassword} onChange={handleConfirmPasswordChange}/>
                                 <button
                                     className="mt-10 tracking-wide font-semibold bg-gradient-to-tl from-blue-500 to-indigo-500 text-gray-100 w-full py-4 rounded-lg hover:bg-gradient-to-tr from-blue-500 to-indigo-500 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none">
                                     <svg className="w-6 h-6 -ml-2" fill="none" stroke="currentColor" stroke-width="2"
@@ -397,7 +407,9 @@ export default function Login() {
                                         Edit
                                     </span>
                                 </button>
-
+                                {loadingPassword && <p className="text-grey-500 mt-4">{loadingPassword}</p>}
+                                {errorPassword && <p className="text-red-500 mt-4">{errorPassword}</p>}
+                                {successPassword && <p className="text-green-500 mt-4">{successPassword}</p>}
                                 {/* <Link href="/forgot_pwd" className="font-semibold text-blue-700 hover:text-indigo-500 flex items-center justify-center mt-5">Forgot your password ?</Link> */}
 
                             </form>
