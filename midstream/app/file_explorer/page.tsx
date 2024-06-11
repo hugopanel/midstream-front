@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { formatSize, formatDate } from "../format/format";
 import NavBar from "../navigation/navBare";
 import SideBar from "../navigation/sideBare";
-import { on } from 'events';
 
 const maxFilesOnPage = 7;
 const page = 'files';
@@ -22,10 +21,6 @@ export default function FileExplorer() {
             <path d="M15 5.25a5.23 5.23 0 0 0-1.279-3.434 9.768 9.768 0 0 1 6.963 6.963A5.23 5.23 0 0 0 17.25 7.5h-1.875A.375.375 0 0 1 15 7.125V5.25ZM4.875 6H6v10.125A3.375 3.375 0 0 0 9.375 19.5H16.5v1.125c0 1.035-.84 1.875-1.875 1.875h-9.75A1.875 1.875 0 0 1 3 20.625V7.875C3 6.839 3.84 6 4.875 6Z" />
         </svg>
     );
-
-    function selectPage(page: number) {
-        setSelectedPage(page);
-    }
     
     const updateSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearch(event.target.value);
@@ -37,7 +32,10 @@ export default function FileExplorer() {
             const response = await fetch('api/files');
             const data = await response.json();
             if (Array.isArray(data.files)) {
-                setFiles(data.files);
+                let files = data.files.sort((a: File, b: File) => {
+                    return new Date(b.modified_date).getTime() - new Date(a.modified_date).getTime();
+                });
+                setFiles(files);
             } else {
                 console.error('Expected an array but received:', data);
             }
@@ -48,12 +46,8 @@ export default function FileExplorer() {
 
     useEffect(() => {
         fetchFiles();
-    }, []);
-    // charger les fichiers au chargement de la page
-    useEffect(() => {
-        fetchFiles();
-    }, []);
-    
+    }, [selectedPage]);
+
     useEffect(() => {
 
         const filteredFiles = Array.isArray(files) ? files.filter((file) => file.name.toLowerCase().includes(search.toLowerCase())) : [];
@@ -96,7 +90,6 @@ export default function FileExplorer() {
                         <div className="relative flex flex-col bg-clip-border rounded-xl bg-white text-gray-700 shadow-md overflow-hidden xl:col-span-3">
                             <div className="relative bg-clip-border rounded-xl overflow-hidden bg-transparent text-gray-700 shadow-none m-0 flex items-center justify-between p-6">
                                 <div>
-
                                     <h6 className="block antialiased tracking-normal  flex items-center font-sans text-base font-semibold leading-relaxed text-blue-gray-900 mb-1"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" aria-hidden="true" className="h-4 w-4 text-blue-500 mr-2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"></path>
                                     </svg>Your Files</h6>
@@ -149,7 +142,7 @@ export default function FileExplorer() {
                                                 <p className="block antialiased font-sans text-[12px] font-bold uppercase text-blue-50">Type</p>
                                             </th>
                                             <th className="border-b border-blue-gray-50 py-3 px-6 text-left">
-                                                <p className="block antialiased font-sans text-[12px] font-bold uppercase text-blue-50">Date</p>
+                                                <p className="block antialiased font-sans text-[12px] font-bold uppercase text-blue-50">Creation</p>
                                             </th>
                                             <th className="border-b border-blue-gray-50 py-3 px-6 text-left">
                                                 <p className="block antialiased font-sans text-[12px] font-bold uppercase text-blue-50">Uploaded By</p>
@@ -206,7 +199,7 @@ export default function FileExplorer() {
                                 <div className="flex items-center justify-between mt-10 mb-6">
 
                                 <button className="flex items-center px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md gap-x-2 hover:bg-gray-100" onClick={()=>{
-                                        selectPage(selectedPage - 1);
+                                        setSelectedPage(selectedPage - 1);
                                     }} >
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-5 h-5 rtl:-scale-x-100">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
@@ -224,7 +217,7 @@ export default function FileExplorer() {
                                                 <button
                                                     key={index}
                                                     className={`px-2 py-1 text-sm text-gray-500 rounded-md ${selectedPage === nav ? 'bg-blue-100/60' : 'hover:bg-gray-100'}`}
-                                                    onClick={() => selectPage(nav)}
+                                                    onClick={() => setSelectedPage(nav)}
                                                 >
                                                     {nav}
                                                 </button>
@@ -233,7 +226,7 @@ export default function FileExplorer() {
                                     </div>
 
                                     <button className="flex items-center px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md gap-x-2 hover:bg-gray-100" onClick={()=>{
-                                        selectPage(selectedPage + 1);
+                                        setSelectedPage(selectedPage + 1);
                                     }} >
                                         <span>
                                             Next

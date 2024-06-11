@@ -1,29 +1,31 @@
 import { formatDate } from "../format/format";
+import { useEffect, useState } from "react";
+
+const maxProjects = 8;
 export default function Projects() {
 
-    const projects: Project[] = [
-        {
-            id: 1,
-            name: "Material XD Version",
-            beginning_date: new Date('12-12-2022'),
-            description: "Material XD Version",
-            progress: 25,
-        },
-        {
-            id: 2,
-            name: "Add Progress Track",
-            beginning_date: new Date('12-11-2023'),
-            description: "Add Progress Track",
-            progress: 10,
-        },
-        {
-            id: 3,
-            name: "Fix Platform Errors",
-            beginning_date: new Date('12-25-2023'),
-            description: "Fix Platform Errors",
-            progress: 100,
-        },
-    ];
+    const [projects, setProjects] = useState<Project[]>([]);
+    async function fetchProjects() {
+        try {
+            const response = await fetch('api/projects');
+            const data = await response.json();
+            if (Array.isArray(data.projects)) {
+                let projects = data.projects.sort((a: Project, b: Project) => {
+                    return new Date(b.beginning_date).getTime() - new Date(a.beginning_date).getTime();
+                });
+                setProjects(projects.slice(0, maxProjects) );
+            } else {
+                console.error('Expected an array but received:', data);
+            }
+        } catch (error) {
+            console.error('Error during fetching projects:', error);
+        }
+    }
+
+    useEffect(() => {
+        fetchProjects();
+    }, []);
+
     return (
         <div className="relative flex flex-col bg-clip-border rounded-xl bg-white text-gray-700 shadow-md overflow-hidden xl:col-span-1">
             <div className="relative bg-clip-border rounded-xl overflow-hidden bg-transparent text-gray-700 shadow-none m-0 flex items-center justify-between p-6">

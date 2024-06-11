@@ -1,80 +1,34 @@
+"use client";
+import { useEffect, useState } from 'react';
+import { File } from '../file_explorer/page';
+import {formatDate } from "../format/format";
+
+
+const maxFiles = 8;
+
 export default function Files() {
-    interface File {
-        id: number;
-        name: string;
-        path: string;
-        description: string;
-        extension: string;
-        created_date: string;
-        modified_date: string;
+    const [files, setFiles] = useState<File[]>([]);
+    async function fetchFiles() {
+        try {
+            const response = await fetch('api/files');
+            const data = await response.json();
+            if (Array.isArray(data.files)) {
+                let files = data.files.sort((a: File, b: File) => {
+                    return new Date(b.modified_date).getTime() - new Date(a.modified_date).getTime();
+                });
+                setFiles(files.slice(0, maxFiles) );
+            } else {
+                console.error('Expected an array but received:', data);
+            }
+        } catch (error) {
+            console.error('Error during fetching files:', error);
+        }
     }
 
-    const files: File[] = [
+    useEffect(() => {
+        fetchFiles();
+    }, []);
 
-        {
-            id: 1,
-            name: "Material XD Version",
-            path: "Marketing",
-            description: "Material XD Version",
-            extension: "Excel",
-            created_date: "12/05/24",
-            modified_date: "12/05/24",
-        },
-        {
-            id: 2,
-            name: "Add Progress Track",
-            path: "Marketing",
-            description: "Add Progress Track",
-            extension: "Excel",
-            created_date: "12/12/23",
-            modified_date: "12/12/23",
-        },
-        {
-            id: 3,
-            name: "Fix Platform Errors",
-            path: "Marketing",
-            description: "Fix Platform Errors",
-            extension: "Word",
-            created_date: "01/07/24",
-            modified_date: "01/07/24",
-        },
-        {
-            id: 4,
-            name: "Launch our Mobile App",
-            path: "Marketing",
-            description: "Launch our Mobile App",
-            extension: "Powerpoint",
-            created_date: "18/02/24",
-            modified_date: "18/02/24",
-        },
-        {
-            id: 5,
-            name: "Add the New Pricing Page",
-            path: "Marketing",
-            description: "Add the New Pricing Page",
-            extension: "Excel",
-            created_date: "12/05/24",
-            modified_date: "12/05/24",
-        },
-        {
-            id: 6,
-            name: "Add the New Pricing Page",
-            path: "Marketing",
-            description: "Add the New Pricing Page",
-            extension: "Excel",
-            created_date: "12/05/24",
-            modified_date: "12/05/24",
-        },
-        {
-            id: 6,
-            name: "Add the New Pricing Page",
-            path: "Marketing",
-            description: "Add the New Pricing Page",
-            extension: "Excel",
-            created_date: "12/05/24",
-            modified_date: "12/05/24",
-        },
-    ];
     return (
         <div className="relative flex flex-col bg-clip-border rounded-xl bg-white text-gray-700 shadow-md overflow-hidden xl:col-span-2">
             <div className="relative bg-clip-border rounded-xl overflow-hidden bg-transparent text-gray-700 shadow-none m-0 flex items-center justify-between p-6">
@@ -105,7 +59,7 @@ export default function Files() {
                                 <p className="block antialiased font-sans text-[11px] font-medium uppercase text-blue-gray-400">Type</p>
                             </th>
                             <th className="border-b border-blue-gray-50 py-3 px-6 text-left">
-                                <p className="block antialiased font-sans text-[11px] font-medium uppercase text-blue-gray-400">Date</p>
+                                <p className="block antialiased font-sans text-[11px] font-medium uppercase text-blue-gray-400">Last update</p>
                             </th>
                         </tr>
                     </thead>
@@ -118,11 +72,11 @@ export default function Files() {
                                     </div>
                                 </td>
                                 <td className="py-3 px-5 border-b border-blue-gray-50">
-                                    <p className="block antialiased font-sans text-xs font-medium text-blue-gray-600">{file.extension}</p>
+                                    <p className="block antialiased font-sans text-xs font-medium text-blue-gray-600">{file.type}</p>
                                 </td>
                                 <td className="py-3 px-5 border-b border-blue-gray-50">
                                     <div className="w-10/12">
-                                        <p className="antialiased font-sans mb-1 block text-xs font-medium text-blue-gray-600">{file.created_date}</p>
+                                        <p className="antialiased font-sans mb-1 block text-xs font-medium text-blue-gray-600">{formatDate(file.modified_date)}</p>
                                     </div>
                                 </td>
                             </tr>

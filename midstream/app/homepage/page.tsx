@@ -1,3 +1,4 @@
+"use client";
 import Tasks from "./tasks";
 import Files from "./files";
 import Projects from "./projects";
