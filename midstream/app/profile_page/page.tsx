@@ -7,11 +7,12 @@ export default function Login() {
     return (
         // (<main className="flex min-h-screen flex-col items-center justify-between p-24"><h1>First Post</h1>;</main>)
 
-        <div className="min-h-screen bg-blue-900 text-gray-900 flex justify-center">
-            <button>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" className="w-10 h-10 text-inherit">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-        </svg></button>
+        <div className="min-h-screen bg-blue-900 text-gray-900 flex justify-center items-baseline">
+                <button className="xl:mr-[12px] xl:-ml-[39px] sm:mr-0 sm:ml-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" className="w-10 h-10 text-inherit">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                    </svg>
+                </button>
             <div className="max-w-screen-xl m-0 sm:m-10 bg-white shadow-2xl sm:rounded-lg flex justify-center flex-1 shadow-[0_0px_64px_-12px_rgba(240,249,255,1)]">
                 <div className="lg:w-1/2 p-6 sm:p-12">
                     {/* <div className=" flex flex-col items-center">
@@ -225,9 +226,9 @@ export default function Login() {
                                     </span>
                                 </button>
 
-                                {/* <Link href="/forgot_pwd" className="font-semibold text-blue-700 hover:text-indigo-500 flex items-center justify-center mt-5">Forgot your password ?</Link> */}
-
                             </div>
+                            <Link href="/forgot_pwd" className="font-semibold text-blue-700 hover:text-indigo-500 flex text-center items-center justify-center mt-5">Any questions ? Contact our team via the email midstream42@gmail.com</Link>
+
                         </div>
                     </div>
                 </div>
