@@ -36,6 +36,7 @@ export default function Login() {
             }
 
             const data = await response.json();
+            localStorage.setItem('token', data.token);
             console.log('Login successful:', data);
             router.push('/homepage');
         } catch (error: any) {

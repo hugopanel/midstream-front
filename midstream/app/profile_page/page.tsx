@@ -1,17 +1,252 @@
+"use client";
+
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
+
 import Image from "next/image";
 import Link from 'next/link';
 import logo from '../assets/logo.png';
-
+import { useRouter } from 'next/navigation';
 
 export default function Login() {
+
+    const [email, setEmail] = useState<string>('');
+    const [firstName, setFirstName] = useState<string>('');
+    const [lastName, setLastName] = useState<string>('');
+    const [username, setUsername] = useState<string>('');
+    const [currentPassword, setCurrentPassword] = useState<string>('');
+    const [newPassword, setNewPassword] = useState<string>('');
+    const [confirmPassword, setConfirmPassword] = useState<string>('');
+    const [colour, setColour] = useState("#000000");
+    const [id, setId] = useState<string>('');
+    const [errorInfo, setErrorInfo] = useState<string>('');
+    const [errorEmail, setErrorEmail] = useState<string>('');
+    const [errorAvatar, setErrorAvatar] = useState<string>('');
+    const [errorPassword, setErrorPassword] = useState<string>('');
+    const [loadingInfo, setLoadingInfo] = useState<string>('');
+    const [loadingEmail, setLoadingEmail] = useState<string>('');
+    const [loadingAvatar, setLoadingAvatar] = useState<string>('');
+    const [loadingPassword, setLoadingPassword] = useState<string>('');
+    const [successInfo, setSuccessInfo] = useState<string>('');
+    const [successEmail, setSuccessEmail] = useState<string>('');
+    const [successAvatar, setSuccessAvatar] = useState<string>('');
+    const [successPassword, setSuccessPassword] = useState<string>('');
+
+    const router = useRouter();
+
+    const Load = async () => {
+        setErrorInfo('');
+
+        const token = localStorage.getItem('token');
+
+        try {
+            const response = await fetch('/api/profile_page', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ token }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to sign in');
+            }
+
+            const data = await response.json();
+
+            setEmail(data.email);
+            setUsername(data.username);
+            setFirstName(data.firstName);
+            setLastName(data.lastName);
+            setColour(data.colour);
+            const radioButton = document.getElementById(data.avatar) as HTMLInputElement | null;
+                    
+            if (radioButton && radioButton.id == data.avatar) {
+                console.log("found");
+                radioButton.checked = true;
+            }
+            setId(data.id);
+        } catch (error: any) {
+            setErrorInfo(error.message);
+            console.error('Error getting the info :', error);
+        } finally {
+            setLoadingInfo('');
+        }
+    };
+
+    const updateInfo = async (e: FormEvent) => {
+        e.preventDefault();
+        setLoadingInfo('Loading...');
+        setErrorInfo('');
+
+        const token = localStorage.getItem('token');
+
+        try {
+            const response = await fetch('/api/update_info', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ token, username, firstName, lastName }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to sign in');
+            }
+
+            const data = await response.json();
+            localStorage.removeItem("token");
+            localStorage.setItem('token', data.token);
+            setSuccessInfo('Information updated.');
+        } catch (error: any) {
+            setErrorInfo(error.message);
+            console.error('Error during update of the info:', error);
+        } finally {
+            setLoadingInfo('');
+        }
+    };
+
+    const updateEmail = async (e: FormEvent) => {
+        e.preventDefault();
+        setLoadingEmail('Loading...');
+        setErrorEmail('');
+
+        const token = localStorage.getItem('token');
+
+        try {
+            const response = await fetch('/api/update_email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ token, email }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to sign in');
+            }
+
+            const data = await response.json();
+            localStorage.setItem('token', data.token);
+            setSuccessEmail('Email updated.');
+        } catch (error: any) {
+            setErrorEmail(error.message);
+            console.error('Error logging in:', error);
+        } finally {
+            setLoadingEmail('');
+        }
+    };
+
+    const updatePassword = async (e: FormEvent) => {
+        e.preventDefault();
+        setLoadingPassword('Loading...');
+        setErrorPassword('');
+
+        const token = localStorage.getItem('token');
+        if (newPassword == confirmPassword){
+            try {
+                const response = await fetch('/api/update_password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token, currentPassword, newPassword }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to sign in');
+                }
+
+                const data = await response.json();
+                setCurrentPassword('');
+                setNewPassword('');
+                setConfirmPassword('');
+                setSuccessPassword('Password updated successfully.');
+            } catch (error: any) {
+                setErrorPassword(error.message);
+                console.error('Error logging in:', error);
+            } finally {
+                setLoadingPassword('');
+            }
+        }else{
+            setErrorPassword("You must enter the same password twice.");
+        }
+        
+    };
+
+    const updateAvatar = async (e: FormEvent) => {
+        e.preventDefault();
+        setLoadingPassword('Loading...');
+        setErrorPassword('');
+        
+        const token = localStorage.getItem('token');
+        const selectedOption = document.querySelector('input[name="option"]:checked');
+
+        if (selectedOption) {
+            console.log('Selected option:', selectedOption.id);
+            const avatar = selectedOption.id;
+            console.log(avatar);
+            console.log(colour);
+            try {
+                const response = await fetch('/api/update_avatar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token, avatar, colour }),
+                });
+    
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to sign in');
+                }
+    
+                const data = await response.json();
+                console.log(data.token);
+                localStorage.setItem('token', data.token);
+                setSuccessAvatar('Avatar updated.');
+            } catch (error: any) {
+                setErrorAvatar(error.message);
+                console.error('Error logging in:', error);
+            } finally {
+                setLoadingAvatar('');
+            }
+        } else {
+            console.log('No option selected');
+        }
+               
+    };
+
+    
+
+
+    useEffect(() => {
+        Load();
+        //Avatar();
+    }, []);
+
+    const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value);
+    const handleUsernameChange = (e: ChangeEvent<HTMLInputElement>) => setUsername(e.target.value);
+    const handleFirstNameChange = (e: ChangeEvent<HTMLInputElement>) => setFirstName(e.target.value);
+    const handleLastNameChange = (e: ChangeEvent<HTMLInputElement>) => setLastName(e.target.value);
+    const handleCurrentPasswordChange = (e: ChangeEvent<HTMLInputElement>) => setCurrentPassword(e.target.value);
+    const handleNewPasswordChange = (e: ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value);
+    const handleConfirmPasswordChange = (e: ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value);
+    const handleColourChange = (e: ChangeEvent<HTMLInputElement>) => setColour(e.target.value);
+
+    
     return (
         // (<main className="flex min-h-screen flex-col items-center justify-between p-24"><h1>First Post</h1>;</main>)
 
-        <div className="min-h-screen bg-blue-900 text-gray-900 flex justify-center">
-            <button>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" className="w-10 h-10 text-inherit">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-        </svg></button>
+        <div className="min-h-screen bg-blue-900 text-gray-900 flex justify-center items-baseline">
+            <button className="xl:mr-[12px] xl:-ml-[39px] sm:mr-0 sm:ml-0" onClick={() => router.back()}>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" className="w-10 h-10 text-inherit">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                </svg>
+            </button>
             <div className="max-w-screen-xl m-0 sm:m-10 bg-white shadow-2xl sm:rounded-lg flex justify-center flex-1 shadow-[0_0px_64px_-12px_rgba(240,249,255,1)]">
                 <div className="lg:w-1/2 p-6 sm:p-12">
                     {/* <div className=" flex flex-col items-center">
@@ -68,16 +303,16 @@ export default function Login() {
                                 </button>
                             </div> */}
 
-                            <div className="mx-auto max-w-xs mb-32">
+                            <form onSubmit={updateInfo} className="mx-auto max-w-xs mb-32">
                                 <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
-                                    type="text" placeholder="Username" />
+                                    type="text" placeholder="Username" value={username} onChange={handleUsernameChange} />
                                 <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
-                                    type="text" placeholder="First Name" />
+                                    type="text" placeholder="First Name" value={firstName} onChange={handleFirstNameChange} />
                                 <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
-                                    type="text" placeholder="Last Name" />
+                                    type="text" placeholder="Last Name" value={lastName} onChange={handleLastNameChange} />
                                 <button
                                     className="mt-10 tracking-wide font-semibold bg-gradient-to-tl from-blue-500 to-indigo-500 text-gray-100 w-full py-4 rounded-lg hover:bg-gradient-to-tr from-blue-500 to-indigo-500 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none">
                                     <svg className="w-6 h-6 -ml-2" fill="none" stroke="currentColor" stroke-width="2"
@@ -90,7 +325,11 @@ export default function Login() {
                                         Edit
                                     </span>
                                 </button>
-                            </div>
+                                {loadingInfo && <p className="text-grey-500 mt-4">{loadingInfo}</p>}
+                                {errorInfo && <p className="text-red-500 mt-4">{errorInfo}</p>}
+                                {successInfo && <p className="text-green-500 mt-4">{successInfo}</p>}
+                            </form>
+                            
                             <div className="my-12 border-b text-center">
                                 <div
                                     className="leading-none px-2 inline-block text-lg text-gray-600 tracking-wide font-medium bg-white transform translate-y-1/2">
@@ -98,10 +337,10 @@ export default function Login() {
                                 </div>
                             </div>
 
-                            <div className="mx-auto max-w-xs mb-32">
+                            <form onSubmit={updateEmail} className="mx-auto max-w-xs mb-32">
                                 <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white"
-                                    type="email" placeholder="Email" />
+                                    type="email" placeholder="Email" value={email} onChange={handleEmailChange} />
                                 <button
                                     className="mt-10 tracking-wide font-semibold bg-gradient-to-tl from-blue-500 to-indigo-500 text-gray-100 w-full py-4 rounded-lg hover:bg-gradient-to-tr from-blue-500 to-indigo-500 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none">
                                     <svg className="w-6 h-6 -ml-2" fill="none" stroke="currentColor" stroke-width="2"
@@ -114,14 +353,17 @@ export default function Login() {
                                         Update
                                     </span>
                                 </button>
-                            </div>
+                                {loadingEmail && <p className="text-grey-500 mt-4">{loadingEmail}</p>}
+                                {errorEmail && <p className="text-red-500 mt-4">{errorEmail}</p>}
+                                {successEmail && <p className="text-green-500 mt-4">{successEmail}</p>}
+                            </form>
                             <div className="my-12 border-b text-center">
                                 <div
                                     className="leading-none px-2 inline-block text-lg text-gray-600 tracking-wide font-medium bg-white transform translate-y-1/2">
                                     Customize your Avatar
                                 </div>
                             </div>
-                            <div className="mx-auto max-w-xs flex flex-col align-center items-center justify-center mb-32">
+                            <form onSubmit={updateAvatar} className="mx-auto max-w-xs flex flex-col align-center items-center justify-center mb-32">
 
                                 <div className="grid w-[40rem] grid-cols-5 gap-2 rounded-xl bg-gray-50 p-2 mt-10">
                                     <div>
@@ -136,7 +378,7 @@ export default function Login() {
 
                                     <div>
                                         <input type="radio" name="option" id="2" value="2" className="peer hidden" />
-                                        <label htmlFor="2" className="flex justify-center items-center cursor-pointer select-none rounded-xl p-2 peer-checked:bg-gradient-to-tl from-blue-500 to-indigo-500 peer-checked:font-bold peer-checked:text-white">
+                                        <label htmlFor="2"className="flex justify-center items-center cursor-pointer select-none rounded-xl p-2 peer-checked:bg-gradient-to-tl from-blue-500 to-indigo-500 peer-checked:font-bold peer-checked:text-white">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-10 h-10 text-inherit">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
                                             </svg>
@@ -158,7 +400,7 @@ export default function Login() {
 
                                     <div>
                                         <input type="radio" name="option" id="4" value="4" className="peer hidden" />
-                                        <label htmlFor="4" className="flex justify-center items-center cursor-pointer select-none rounded-xl p-2 peer-checked:bg-gradient-to-tl from-blue-500 to-indigo-500 peer-checked:font-bold peer-checked:text-white">
+                                        <label htmlFor="4"className="flex justify-center items-center cursor-pointer select-none rounded-xl p-2 peer-checked:bg-gradient-to-tl from-blue-500 to-indigo-500 peer-checked:font-bold peer-checked:text-white">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-10 h-10 text-inherit">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
                                             </svg>
@@ -179,7 +421,8 @@ export default function Login() {
                                 </div>
 
                                 <div className="mt-10">
-                                    <input type="color" className="p-1  w-60 h-10 block bg-gray-50 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none" id="hs-color-input" title="Choose your color"></input>
+                                    <input type="color" className="p-1  w-60 h-10 block bg-gray-50 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none" id="hs-color-input" value={colour}
+        onChange={handleColourChange} title="Choose your color"></input>
                                 </div>
                                 <button
                                     className="mt-20 tracking-wide font-semibold bg-gradient-to-tl from-blue-500 to-indigo-500 text-gray-100 w-full py-4 rounded-lg hover:bg-gradient-to-tr from-blue-500 to-indigo-500 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none">
@@ -193,8 +436,10 @@ export default function Login() {
                                         Customize
                                     </span>
                                 </button>
-
-                            </div>
+                                {loadingAvatar && <p className="text-grey-500 mt-4">{loadingAvatar}</p>}
+                                {errorAvatar && <p className="text-red-500 mt-4">{errorAvatar}</p>}
+                                {successAvatar && <p className="text-green-500 mt-4">{successAvatar}</p>}
+                            </form>
                             <div className="my-12 border-b text-center">
                                 <div
                                     className="leading-none px-2 inline-block text-lg text-gray-600 tracking-wide font-medium bg-white transform translate-y-1/2">
@@ -202,16 +447,16 @@ export default function Login() {
                                 </div>
                             </div>
 
-                            <div className="mx-auto max-w-xs mb-32">
+                            <form onSubmit={updatePassword} className="mx-auto max-w-xs mb-32">
                                 <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
-                                    type="password" placeholder="Current Password" />
+                                    type="password" placeholder="Current Password" value={currentPassword} onChange={handleCurrentPasswordChange} />
                                 <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
-                                    type="password" placeholder="New Password" />
+                                    type="password" placeholder="New Password" value={newPassword} onChange={handleNewPasswordChange}/>
                                 <input
                                     className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
-                                    type="password" placeholder="Confirm Password" />
+                                    type="password" placeholder="Confirm Password" value={confirmPassword} onChange={handleConfirmPasswordChange}/>
                                 <button
                                     className="mt-10 tracking-wide font-semibold bg-gradient-to-tl from-blue-500 to-indigo-500 text-gray-100 w-full py-4 rounded-lg hover:bg-gradient-to-tr from-blue-500 to-indigo-500 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none">
                                     <svg className="w-6 h-6 -ml-2" fill="none" stroke="currentColor" stroke-width="2"
@@ -224,10 +469,14 @@ export default function Login() {
                                         Edit
                                     </span>
                                 </button>
-
+                                {loadingPassword && <p className="text-grey-500 mt-4">{loadingPassword}</p>}
+                                {errorPassword && <p className="text-red-500 mt-4">{errorPassword}</p>}
+                                {successPassword && <p className="text-green-500 mt-4">{successPassword}</p>}
                                 {/* <Link href="/forgot_pwd" className="font-semibold text-blue-700 hover:text-indigo-500 flex items-center justify-center mt-5">Forgot your password ?</Link> */}
 
-                            </div>
+                            </form>
+
+                            <Link href="mailto:midstream42@gmail.com" className="font-semibold text-blue-700 hover:text-indigo-500 flex text-center items-center justify-center mt-5">Any questions ? Contact our team via the email midstream42@gmail.com</Link>
                         </div>
                     </div>
                 </div>
