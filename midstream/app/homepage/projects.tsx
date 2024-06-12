@@ -3,6 +3,7 @@ import { formatDate } from "../format/format";
 import { useEffect, useState } from "react";
 
 const maxProjects = 8;
+
 const Projects: React.FC = () => {
 
 	const [projects, setProjects] = useState<Project[]>([]);
