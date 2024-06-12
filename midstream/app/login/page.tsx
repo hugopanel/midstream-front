@@ -34,10 +34,28 @@ export default function Login() {
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Failed to sign in');
             }
-
             const data = await response.json();
             localStorage.setItem('token', data.token);
+            const token = data.token;
             console.log('Login successful:', data);
+
+            const responseName = await fetch('/api/profile_page', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ token }),
+            });
+
+            if (!response.ok) {
+                const errorData = await responseName.json();
+                throw new Error(errorData.message || 'Failed to sign in');
+            }
+
+            const dataName = await responseName.json();
+            localStorage.setItem('userName', dataName.username);
+            console.log('Login successful:', dataName);
+
             router.push('/homepage');
         } catch (error: any) {
             setError(error.message);

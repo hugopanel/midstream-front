@@ -1,7 +1,8 @@
+"use client";
 import Image from "next/image";
 import logo from '../assets/logo2.png';
 
-export default function SideBar(page: string) {
+export default function SideBar(page: string): React.ReactElement{
     return (
         <aside className="bg-gradient-to-r from-blue-100 to-blue-50 -translate-x-80 fixed inset-0 z-50 my-4 ml-4 h-[calc(100vh-32px)] w-72 rounded-xl transition-transform duration-300 xl:translate-x-0">
         <div className="relative border-b border-white/20">
@@ -10,6 +11,7 @@ export default function SideBar(page: string) {
                     <Image
                         src={logo}
                         alt="logo"
+                        priority 
                     />
                 </div>
             </a>

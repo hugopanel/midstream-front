@@ -8,9 +8,7 @@ import NavBar from "../navigation/navBare";
 
 export default function HomePage() {
   const page = 'dashboard';
-  const user = {
-    name: "Loulou",
-  }
+
   const project: Project = {
     id: 1,
     name: "Project A",
