@@ -432,7 +432,7 @@ export default function Marketplace() {
                                             <td>
                                                 <div className="p-4 flex justify-center">
                                                     {member.roles.map((role) => (
-                                                        <span key={role} className={`inline-flex items-center rounded-md bg-${role === 'Admin' ? 'pink' : 'indigo'}-50 px-4 py-2 text-sm font-medium text-${role === 'Admin' ? 'pink' : 'indigo'}-600 ring-1 ring-inset ring-${role === 'Admin' ? 'pink' : 'indigo'}-500/10 mr-[10px]`}>
+                                                        <span key={role} className={`inline-flex items-center rounded-md bg-${role === 'admin' ? 'pink' : 'indigo'}-50 px-4 py-2 text-sm font-medium text-${role === 'admin' ? 'pink' : 'indigo'}-600 ring-1 ring-inset ring-${role === 'admin' ? 'pink' : 'indigo'}-500/10 mr-[10px]`}>
                                                             {role}
                                                         </span>
                                                     ))}

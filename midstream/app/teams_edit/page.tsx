@@ -92,8 +92,12 @@ interface Member {
 }
 
 interface User {
-    id: string;
+    userId: string;
     username: string;
+    email: string;
+    avatar: string;
+    colour: string;
+    roles: string[];
 }
 
 interface Role{
@@ -112,6 +116,7 @@ export default function MyComponent() {
     const [teamName, setTeamName] = useState<string>('');
     const [members, setMembers] = useState<Member[]>([]);
     const [membersToAdd, setMembersToAdd] = useState<User[]>([]);
+    const [membersAdded, setMembersAdded] = useState<Member[]>([]);
     const [teams, setTeams] = useState<Team[]>([]);
     const [roles, setRoles] = useState<Role[]>([]);
 
@@ -282,7 +287,6 @@ export default function MyComponent() {
     const handleTeamNameChange = (e: ChangeEvent<HTMLInputElement>) => setTeamName(e.target.value);
 
     const handleRoleChange = (memberId, roleId) => {
-        console.log(memberId);
         const selectedRole = roles.find((role) => role.id === roleId);
         const roleName = selectedRole ? selectedRole.name : '';
     
@@ -300,8 +304,28 @@ export default function MyComponent() {
         );
       };
 
+      const handleRoleToAddChange = (memberId, roleId) => {
+        console.log(memberId, roleId);
+        const selectedRole = roles.find((role) => role.id === roleId);
+        const roleName = selectedRole ? selectedRole.name : '';
+        console.log(roleName);
+    
+        setMembersAdded((prevMembers) =>
+          prevMembers.map((member) =>
+            member.memberId === memberId
+              ? {
+                  ...member,
+                  rolestoadd: member.rolestoadd
+                    ? [...member.rolestoadd, roleName]
+                    : [roleName],
+                }
+              : member
+          )
+        );
+      };
+
       const handleRoleDelete = (memberId, roleName, listType) => {
-        setMembers((prevMembers) =>
+        setMembers((prevMember) =>
           prevMembers.map((member) =>
             member.memberId === memberId
               ? {
@@ -312,6 +336,38 @@ export default function MyComponent() {
           )
         );
       };
+
+      const handleRoleToAddDelete = (memberId, roleName, listType) => {
+        setMembersAdded((prevMembersAdded) =>
+          prevMembersAdded.map((member) =>
+            member.memberId === memberId
+              ? {
+                  ...member,
+                  [listType]: member[listType].filter((role) => role !== roleName),
+                }
+              : member
+          )
+        );
+      };
+
+      const handleMemberAdd = (userId) => {
+        const selectedMember = membersToAdd.find((member) => member.userId === userId);
+    
+        if (selectedMember) {
+          const newMember: Member = {
+            memberId: selectedMember.userId,
+            username: selectedMember.username,
+            email: selectedMember.email,
+            avatar: selectedMember.avatar,
+            colour: selectedMember.colour,
+            roles: selectedMember.roles,
+            rolestoadd: [],
+          };
+    
+          setMembersAdded((prevMembersAdded) => [...prevMembersAdded, newMember]);
+        }
+      };
+
       
     return (
         <div className="min-h-screen bg-gradient-to-r from-indigo-500 from-5% via-blue-300 via-30% to-cyan-50 to-95%">
@@ -396,13 +452,13 @@ export default function MyComponent() {
                                     </button>
                                 </div>
                                 <div className="pt-2 relative mx-auto text-gray-600">
-                                    <select id="countries" className="border-2 border-gray-300 bg-white h-10 px-5 pr-16 rounded-lg text-sm focus:outline-none">
+                                    <select id="countries" onChange={(e) => handleMemberAdd(e.target.value)} className="border-2 border-gray-300 bg-white h-10 px-5 pr-16 rounded-lg text-sm focus:outline-none">
                                         <option selected disabled>Add member</option>
                                         {loading ? (
                                         <option>Loading...</option>
                                         ) : (
                                         membersToAdd.map((memberToAdd) => (
-                                            <option key={memberToAdd.id} value={memberToAdd.id}>{memberToAdd.username}</option>
+                                            <option key={memberToAdd.userId} value={memberToAdd.userId}>{memberToAdd.username}</option>
                                         ))
                                         )}
                                     </select>
@@ -541,6 +597,63 @@ export default function MyComponent() {
                                                 </div>
                                                 <div className="col-span-1 start-col-5 justify-items-end">
                                                 <select id="roles" onChange={(e) => handleRoleChange(member.memberId, e.target.value)}  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                                    <option selected disabled>Add role</option>
+                                                    {loading ? (
+                                                    <option>Loading...</option>
+                                                    ) : (
+                                                    roles.map((role) => (
+                                                        <option key={role.id} value={role.id}>{role.name}</option>
+                                                    ))
+                                                    )}
+                                                </select>
+                                                </div>
+                                            </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {(membersAdded || []).map((member, index) => (
+                                        <tr key={member.memberId} className={index % 2 === 0 ? 'bg-blue-100/20' : 'bg-white'}>
+                                            <td>
+                                            <div className="flex min-w-0 gap-x-4">
+                                                <div className={`bg-clip-border ml-8 mx-4 my-4 rounded-xl overflow-hidden text-white shadow-[${hexToRgb(member.colour)}] shadow-lg grid h-16 w-16 place-items-center`} style={{ backgroundColor: hexToRgb(member.colour), boxShadow: `0px 10px 15px -3px ${hexToRgb(member.colour)}`}}>
+      
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-10 h-10 text-inherit">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d={avatarPaths[member.avatar - 1]} />
+                                                    </svg>
+                                                </div>
+                                                <div className="min-w-0 flex flex-col justify-center">
+                                                <p className="text-[15px] font-semibold leading-6 text-gray-900 tracking-wide">{member.username}</p>
+                                                <p className="mt-1 truncate text-[14px] leading-5 text-gray-500 tracking-wide">{member.email}</p>
+                                                </div>
+                                            </div>
+                                            </td>
+                                            <td>
+                                            <div className="p-4 grid grid-flow-row-dense grid-cols-5 grid-rows-1 justify-items-stretch">
+                                                <div className="justify-items-center start-col-2 col-span-4">
+                                                {member.roles.map((role) => (
+                                                    <span key={role} className={`inline-flex items-center rounded-md bg-${role === 'admin' ? 'pink' : 'indigo'}-50 px-4 py-2 text-sm font-medium text-${role === 'admin' ? 'pink' : 'indigo'}-600 ring-1 ring-inset ring-${role === 'admin' ? 'pink' : 'indigo'}-500/10 mr-[10px]`}>
+                                                    {role}
+                                                    <button onClick={() => handleRoleToAddDelete(member.id, role, 'roles')}>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 ml-2 -mr-1">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
+                                                    </span>
+                                                ))}
+                                                {(member.rolestoadd || []).map((role) => (
+                                                    <span key={role} className={`inline-flex items-center rounded-md bg-${role === 'admin' ? 'pink' : 'indigo'}-50 px-4 py-2 text-sm font-medium text-${role === 'admin' ? 'pink' : 'indigo'}-600 ring-1 ring-inset ring-${role === 'admin' ? 'pink' : 'indigo'}-500/10 mr-[10px]`}>
+                                                        {role}
+                                                        <button onClick={() => handleRoleToAddDelete(member.memberId, role, 'rolestoadd')}>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 ml-2 -mr-1">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                                        </svg>
+                                                        </button>
+                                                    </span>
+                                                ))}
+
+                                                </div>
+                                                <div className="col-span-1 start-col-5 justify-items-end">
+                                                <select id="roles" onChange={(e) => handleRoleToAddChange(member.memberId, e.target.value)}  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                                                     <option selected disabled>Add role</option>
                                                     {loading ? (
                                                     <option>Loading...</option>
