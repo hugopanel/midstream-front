@@ -17,29 +17,29 @@ const sortOptions = [
 const filters = [
   {
     id: 'category',
-    name: 'Category',
+    name: 'Tags',
     options: [
-      { value: 'new-arrivals', label: 'All New Arrivals', checked: false },
-      { value: 'tees', label: 'Tees', checked: false },
-      { value: 'objects', label: 'Objects', checked: true },
+      { value: 'me', label: 'My Tasks', checked: false },
+      { value: 'admin', label: 'Admin', checked: false },
+      { value: 'front', label: 'Front', checked: true },
     ],
   },
   {
     id: 'color',
     name: 'Urgency',
     options: [
-      { value: 'white', label: 'White', checked: false },
-      { value: 'beige', label: 'Beige', checked: false },
-      { value: 'blue', label: 'Blue', checked: false },
+      { value: 'crucial', label: 'Crucial', checked: false },
+      { value: 'urgent', label: 'Urgent', checked: false },
+      { value: 'can wait', label: 'Can wait', checked: false },
     ],
   },
   {
     id: 'sizes',
-    name: 'Status',
+    name: 'Due Date',
     options: [
-      { value: 's', label: 'S', checked: false },
-      { value: 'm', label: 'M', checked: false },
-      { value: 'l', label: 'L', checked: false },
+      { value: 'today', label: 'Today', checked: false },
+      { value: 'week', label: 'This week', checked: false },
+      { value: 'month', label: 'This month', checked: false },
     ],
   },
 ]
@@ -510,25 +510,67 @@ const App: React.FC = () => {
           >
             <h2 className="text-xl font-bold mb-2 ml-3">To Do</h2>
             <div
-              className="drop flex-1 p-3 space-y-2 min-h-[460px]"
+              className="drop flex-1 space-y-2 min-h-[460px]"
               ref={dp1Ref}
               onDragOver={(e) => handleDragOver(e, dp1Ref)}
               onDrop={(e) => handleDrop(e, dp1Ref)}>
               <div
                 id="dg1"
-                className="drag w-full bg-blue-100 p-5 rounded-md shadow-md text-white"
+                className="drag w-full bg-blue-100 p-2 rounded-xl shadow-md text-white"
                 draggable
                 onDragStart={(e) => handleDragStart(e, e.currentTarget as HTMLElement)}
               >
-                Item1
+                <div className="relative flex flex-col bg-clip-border rounded-xl bg-white/80 text-gray-700 shadow-md">
+                  <div className="bg-clip-border mx-4 rounded-3xl overflow-hidden bg-gradient-to-tr from-green-600 to-green-400 text-white shadow-green-500/40 shadow-lg absolute mt-2 grid h-13 w-13 place-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-5 h-5 m-2 text-white">
+                      <path d="M6.25 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM3.25 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM19.75 7.5a.75.75 0 00-1.5 0v2.25H16a.75.75 0 000 1.5h2.25v2.25a.75.75 0 001.5 0v-2.25H22a.75.75 0 000-1.5h-2.25V7.5z"></path>
+                    </svg>
+                  </div>
+                  <div className="p-4 text-right">
+                    <p className="block antialiased font-sans text-sm leading-normal font-normal text-blue-gray-600">16/10/24</p>
+                    <h4 className="block antialiased tracking-normal font-sans text-2xl font-semibold leading-snug text-blue-gray-900">Create Database</h4>
+                  </div>
+                  <div className="border-t border-blue-gray-50 p-4 flex justify-end">
+                    <span className="inline-flex items-center rounded-md bg-green-50 px-4 py-2 text-sm font-medium text-green-600 ring-1 ring-inset ring-green-500/10 mr-[10px]">Data</span>
+                    <span className="inline-flex items-center rounded-md bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-600 ring-1 ring-inset ring-indigo-500/10 mr-[10px]"> Back </span>
+                    <Link href="/tasks_edit" className='flex'>
+                      <button>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-6 h-6 text-gray-500 ml-3">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                        </svg>
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+
               </div>
               <div
                 id="dg2"
-                className="drag w-full bg-blue-200 p-5 rounded-md shadow-md text-white"
+                className="drag w-full bg-blue-200 p-2 rounded-xl shadow-md text-white"
                 draggable
                 onDragStart={(e) => handleDragStart(e, e.currentTarget as HTMLElement)}
               >
-                Item2
+                <div className="relative flex flex-col bg-clip-border rounded-xl bg-white/80 text-gray-700 shadow-md">
+                  <div className="bg-clip-border mx-4 rounded-3xl overflow-hidden bg-gradient-to-tr from-pink-600 to-pink-400 text-white shadow-pink-500/40 shadow-lg absolute mt-2 grid h-13 w-13 place-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-5 h-5 m-2 text-white">
+                      <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd"></path>
+                    </svg>
+                  </div>
+                  <div className="p-4 text-right">
+                    <p className="block antialiased font-sans text-sm leading-normal font-normal text-blue-gray-600">21/10/24</p>
+                    <h4 className="block antialiased tracking-normal font-sans text-2xl font-semibold leading-snug text-blue-gray-900">Fix Menu</h4>
+                  </div>
+                  <div className="border-t border-blue-gray-50 p-4 flex justify-end">
+                    <span className="inline-flex items-center rounded-md bg-pink-50 px-4 py-2 text-sm font-medium text-pink-600 ring-1 ring-inset ring-pink-500/10 mr-[10px]"> Front </span>
+                    <Link href="/tasks_edit" className='flex'>
+                      <button>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-6 h-6 text-gray-500 ml-3">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                        </svg>
+                      </button>
+                    </Link>
+                  </div>
+                </div>
               </div>
               <div
                 id="dg3"
@@ -538,6 +580,24 @@ const App: React.FC = () => {
               >
                 Item3
               </div>
+            </div>
+            <button className="text-lg font-semibold mb-2 pt-2 mt-2 flex items-center bottom-0"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="h-5 w-5 text-white font-semibold">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+              Add Task
+            </button>
+
+          </div>
+          <div
+            id="dp2"
+            className="drop flex-1 bg-white/10 rounded-lg shadow-lg p-5 space-y-2 mr-2"
+          >
+            <h2 className="text-xl font-bold mb-2 ml-3">In Progress</h2>
+            <div
+              className="drop flex-1 p-3 space-y-2 min-h-[460px]"
+              ref={dp2Ref}
+              onDragOver={(e) => handleDragOver(e, dp2Ref)}
+              onDrop={(e) => handleDrop(e, dp2Ref)}>
               <div
                 id="dg4"
                 className="drag w-full bg-blue-400 p-5 rounded-md shadow-md text-white"
@@ -555,23 +615,6 @@ const App: React.FC = () => {
                 Item5
               </div>
             </div>
-            <button className="text-lg font-semibold mb-2 pt-2 mt-2 flex items-center bottom-0"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="h-5 w-5 text-white font-semibold">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-              Add Task
-            </button>
-
-          </div>
-          <div
-            id="dp2"
-            className="drop flex-1 bg-white/10 rounded-lg shadow-lg p-5 space-y-2"
-          >
-            <h2 className="text-xl font-bold mb-2 ml-3">In Progress</h2>
-            <div
-              className="drop flex-1 p-3 space-y-2 min-h-[460px]"
-              ref={dp2Ref}
-              onDragOver={(e) => handleDragOver(e, dp2Ref)}
-              onDrop={(e) => handleDrop(e, dp2Ref)}></div>
             <button className="text-lg font-semibold mb-2 pt-2 mt-2 flex items-center bottom-0"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="h-5 w-5 text-white font-semibold">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
