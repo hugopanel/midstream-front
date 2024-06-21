@@ -365,7 +365,7 @@ export default function Marketplace() {
 
                                     <label htmlFor="underline_select" className="sr-only">Underline select</label>
                                     <select id="underline_select" className="block font-semibold uppercase text-center ml-[17px] py-2.5 px-0 w-full text-m text-gray-700 bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200 peer" value={SelectedTeamId || ''} onChange={handleSelectChange} disabled={loading}>
-                                        <option selected disabled>Choose a project</option>
+                                        <option selected disabled>Choose a team</option>
                                         {loading ? (
                                         <option>Loading...</option>
                                         ) : (

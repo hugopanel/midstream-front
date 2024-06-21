@@ -1,6 +1,7 @@
 "use client";
 
-import { Fragment, useState } from 'react'
+import { ChangeEvent, Fragment, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import Image from "next/image";
 import Link from 'next/link';
@@ -73,8 +74,245 @@ function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ')
 }
 
+interface Team {
+    id: string;
+    name: string;
+    projectid: string;
+    members: [];
+}
+
+interface Member {
+    memberId: string;
+    username: string;
+    email: string;
+    avatar: string;
+    colour: string;
+    roles: string[];
+    rolestoadd: string[];
+}
+
+interface User {
+    id: string;
+    username: string;
+}
+
+interface Role{
+    id: string;
+    name: string;
+    permissions : string[];
+}
+
 export default function MyComponent() {
-    const [selected, setSelected] = useState(people[3])
+    const [selected, setSelected] = useState(people[3]);
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const [SelectedProjectId, setSelectedProjectId] = useState<string | null>(null);    
+    const [loading, setLoading] = useState(true);
+    const [teamId, setTeamId] = useState<string | null >('');
+    const [teamName, setTeamName] = useState<string>('');
+    const [members, setMembers] = useState<Member[]>([]);
+    const [membersToAdd, setMembersToAdd] = useState<User[]>([]);
+    const [teams, setTeams] = useState<Team[]>([]);
+    const [roles, setRoles] = useState<Role[]>([]);
+
+    const [avatarPaths] = useState([
+        "M12 12.75c1.148 0 2.278.08 3.383.237 1.037.146 1.866.966 1.866 2.013 0 3.728-2.35 6.75-5.25 6.75S6.75 18.728 6.75 15c0-1.046.83-1.867 1.866-2.013A24.204 24.204 0 0 1 12 12.75Zm0 0c2.883 0 5.647.508 8.207 1.44a23.91 23.91 0 0 1-1.152 6.06M12 12.75c-2.883 0-5.647.508-8.208 1.44.125 2.104.52 4.136 1.153 6.06M12 12.75a2.25 2.25 0 0 0 2.248-2.354M12 12.75a2.25 2.25 0 0 1-2.248-2.354M12 8.25c.995 0 1.971-.08 2.922-.236.403-.066.74-.358.795-.762a3.778 3.778 0 0 0-.399-2.25M12 8.25c-.995 0-1.97-.08-2.922-.236-.402-.066-.74-.358-.795-.762a3.734 3.734 0 0 1 .4-2.253M12 8.25a2.25 2.25 0 0 0-2.248 2.146M12 8.25a2.25 2.25 0 0 1 2.248 2.146M8.683 5a6.032 6.032 0 0 1-1.155-1.002c.07-.63.27-1.222.574-1.747m.581 2.749A3.75 3.75 0 0 1 15.318 5m0 0c.427-.283.815-.62 1.155-.999a4.471 4.471 0 0 0-.575-1.752M4.921 6a24.048 24.048 0 0 0-.392 3.314c1.668.546 3.416.914 5.223 1.082M19.08 6c.205 1.08.337 2.187.392 3.314a23.882 23.882 0 0 1-5.223 1.082",
+        "M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z",
+        "M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42",
+        "M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z",
+        "M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0 0 12 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 0 1-2.031.352 5.988 5.988 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971Zm-16.5.52c.99-.203 1.99-.377 3-.52m0"
+    ]);
+
+    const hexToRgb = (hex: string): string => {
+        // Remove the # symbol if present
+        const cleanedHex = hex.replace("#", "");
+
+        // Split the hex value into three parts (red, green, and blue)
+        const red = parseInt(cleanedHex.substring(0, 2), 16);
+        const green = parseInt(cleanedHex.substring(2, 4), 16);
+        const blue = parseInt(cleanedHex.substring(4, 6), 16);
+
+        console.log(`rgba(${red}, ${green}, ${blue},1)`);
+        // Return the RGB value as a string
+        return `rgba(${red}, ${green}, ${blue},1)`;
+    };
+
+    const fetchProjects = async () => {
+        try {
+          const response = await fetch('/api/projects');
+          const data = await response.json();
+          //setProjects(data.projects);
+          if (data.projects.length > 0) {
+            setSelectedProjectId(data.projects[0].id);
+          }
+        } catch (error) {
+          console.error('Error fetching projects:', error);
+        } finally {
+          //setIsLoading(false);
+        }
+    };
+
+    const fetchRoles = async () => {
+        try {
+          const response = await fetch('/api/roles');
+          const data = await response.json();
+          console.log(data);
+          //setProjects(data.projects);
+          setRoles(data.roles);
+        } catch (error) {
+          console.error('Error fetching projects:', error);
+        } finally {
+          //setIsLoading(false);
+        }
+    };
+
+
+    const getMembers = async (teamId) => {
+        // setLoadingEmail('Loading...');
+        // setErrorEmail('');
+        
+        try {
+            const response = await fetch('/api/get_members_by_team', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ teamId }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to get the members of the team');
+            }
+
+            const data = await response.json();
+            console.log(data);
+            setMembers(data.members);
+            // localStorage.setItem('token', data.token);
+            // setSuccessEmail('Email updated.');
+        } catch (error: any) {
+            // setErrorEmail(error.message);
+            console.error('Error logging in:', error);
+        } finally {
+            // setLoadingEmail('');
+        }
+    };
+
+    const getMemberstoAdd = async (teamId) => {
+        // setLoadingEmail('Loading...');
+        // setErrorEmail('');
+        
+        try {
+            const response = await fetch('/api/get_members_not_in_team', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ teamId }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to get the members of the team');
+            }
+
+            const data = await response.json();
+            console.log(data);
+            setMembersToAdd(data.users);
+            // localStorage.setItem('token', data.token);
+            // setSuccessEmail('Email updated.');
+        } catch (error: any) {
+            // setErrorEmail(error.message);
+            console.error('Error logging in:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getTeamName = async (teamId) => {
+        // setLoadingEmail('Loading...');
+        // setErrorEmail('');
+
+        console.log(teamId);
+        
+        try {
+            console.log(teamId);
+            const response = await fetch('/api/get_team_name', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ teamId }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to get the members of the team');
+            }
+
+            const data = await response.json();
+            console.log(data);
+            setTeamName(data.teamName);
+            // localStorage.setItem('token', data.token);
+            // setSuccessEmail('Email updated.');
+        } catch (error: any) {
+            // setErrorEmail(error.message);
+            console.error('Error logging in:', error);
+        } finally {
+            // setLoadingEmail('');
+        }
+    };
+
+    useEffect(() => {
+        const teamIdQuery = searchParams.get('teamId');
+        fetchRoles();
+        console.log(teamIdQuery);
+        if(teamIdQuery == "null") {
+            console.log('create');
+        }else{
+            setTeamId(teamIdQuery);
+            console.log('edit');
+            console.log(teamId);
+            getMembers(teamIdQuery);
+            getMemberstoAdd(teamIdQuery);
+            getTeamName(teamIdQuery);
+        }
+      }, [searchParams]);
+
+    const handleTeamNameChange = (e: ChangeEvent<HTMLInputElement>) => setTeamName(e.target.value);
+
+    const handleRoleChange = (memberId, roleId) => {
+        console.log(memberId);
+        const selectedRole = roles.find((role) => role.id === roleId);
+        const roleName = selectedRole ? selectedRole.name : '';
+    
+        setMembers((prevMembers) =>
+          prevMembers.map((member) =>
+            member.memberId === memberId
+              ? {
+                  ...member,
+                  rolestoadd: member.rolestoadd
+                    ? [...member.rolestoadd, roleName]
+                    : [roleName],
+                }
+              : member
+          )
+        );
+      };
+
+      const handleRoleDelete = (memberId, roleName, listType) => {
+        setMembers((prevMembers) =>
+          prevMembers.map((member) =>
+            member.memberId === memberId
+              ? {
+                  ...member,
+                  [listType]: member[listType].filter((role) => role !== roleName),
+                }
+              : member
+          )
+        );
+      };
+      
     return (
         <div className="min-h-screen bg-gradient-to-r from-indigo-500 from-5% via-blue-300 via-30% to-cyan-50 to-95%">
             <div className="p-4">
@@ -142,7 +380,7 @@ export default function MyComponent() {
                             <div className="relative bg-clip-border rounded-xl overflow-hidden bg-transparent text-gray-700 shadow-none m-0 flex flex-wrap items-center justify-between p-6">
                                 <div>
 
-                                    <input type="text" name="teamName" id="teamName" value="Project Name" className="block font-semibold uppercase text-center ml-[17px] py-2.5 px-0 w-full text-m text-gray-700 bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200 peer" />
+                                    <input type="text" name="teamName" id="teamName" value={ teamName } onChange={handleTeamNameChange} className="block font-semibold uppercase text-center ml-[17px] py-2.5 px-0 w-full text-m text-gray-700 bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200 peer" />
                                 </div>
                                 <div className="pt-2 relative mx-auto text-gray-600">
                                     <input className="border-2 border-gray-300 bg-white h-10 px-5 pr-16 rounded-lg text-sm focus:outline-none"
@@ -159,11 +397,14 @@ export default function MyComponent() {
                                 </div>
                                 <div className="pt-2 relative mx-auto text-gray-600">
                                     <select id="countries" className="border-2 border-gray-300 bg-white h-10 px-5 pr-16 rounded-lg text-sm focus:outline-none">
-                                        <option selected>Add Member</option>
-                                        <option value="US">Pauline DD</option>
-                                        <option value="CA">Hugo PP</option>
-                                        <option value="FR">Lou BB</option>
-                                        <option value="DE">Arthur II</option>
+                                        <option selected disabled>Add member</option>
+                                        {loading ? (
+                                        <option>Loading...</option>
+                                        ) : (
+                                        membersToAdd.map((memberToAdd) => (
+                                            <option key={memberToAdd.id} value={memberToAdd.id}>{memberToAdd.username}</option>
+                                        ))
+                                        )}
                                     </select>
                                 </div>
                                 {/* <div className="relative">
@@ -257,242 +498,63 @@ export default function MyComponent() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr className="bg-blue-100/20">
+                                    {members.map((member, index) => (
+                                        <tr key={member.memberId} className={index % 2 === 0 ? 'bg-blue-100/20' : 'bg-white'}>
                                             <td>
-                                                <div className="flex min-w-0 gap-x-4">
-                                                    <div className="bg-clip-border ml-8 mx-4 my-4 rounded-xl overflow-hidden bg-gradient-to-tr from-indigo-600 to-indigo-400 text-white shadow-indigo-500/40 shadow-lg grid h-16 w-16 place-items-center">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-10 h-10 text-inherit">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0 0 12 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 0 1-2.031.352 5.988 5.988 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971Zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 0 1-2.031.352 5.989 5.989 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971Z" />
-                                                        </svg>
-                                                    </div>
-                                                    <div className="min-w-0 flex flex-col justify-center">
-                                                        <p className="text-[15px] font-semibold leading-6 text-gray-900 tracking-wide">BLIBLOU Lou</p>
-                                                        <p className="mt-1 truncate text-[14px] leading-5 text-gray-500 tracking-wide">loulou@gmail.com</p>
-                                                    </div>
-                                                </div></td>
-                                            <td>
-                                                <div className="p-4 grid grid-flow-row-dense grid-cols-5 grid-rows-1 justify-items-stretch">
-                                                    <div className="justify-items-center start-col-2 col-span-4">
-                                                        <span className="inline-flex items-center rounded-md bg-pink-50 px-4 py-2 text-sm font-medium text-pink-600 ring-1 ring-inset ring-pink-500/10 mr-[10px]"> Admin
-                                                            <button>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-5 h-5 ml-2 -mr-1">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                                                </svg>
-                                                            </button>
-                                                        </span>
-                                                        <span className="inline-flex items-center rounded-md bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-600 ring-1 ring-inset ring-indigo-500/10 mr-[10px]"> Editor
-                                                            <button>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-5 h-5 ml-2 -mr-1">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                                                </svg>
-                                                            </button>
-                                                        </span>
-                                                        <span className="inline-flex items-center rounded-md bg-sky-50 px-4 py-2 text-sm font-medium text-sky-600 ring-1 ring-inset ring-sky-500/10"> Publisher
-                                                            <button>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-5 h-5 ml-2 -mr-1">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                                                </svg>
-                                                            </button>
-                                                        </span>
-                                                    </div>
-
-                                                    <div className="col-span-1 start-col-5 justify-items-end">
-                                                        <select id="countries" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                                                            <option selected>Add role</option>
-                                                            <option value="US">Admin</option>
-                                                            <option value="CA">Front</option>
-                                                            <option value="FR">Back</option>
-                                                            <option value="DE">Editor</option>
-                                                        </select>
-                                                    </div>
+                                            <div className="flex min-w-0 gap-x-4">
+                                                <div className={`bg-clip-border ml-8 mx-4 my-4 rounded-xl overflow-hidden text-white shadow-[${hexToRgb(member.colour)}] shadow-lg grid h-16 w-16 place-items-center`} style={{ backgroundColor: hexToRgb(member.colour), boxShadow: `0px 10px 15px -3px ${hexToRgb(member.colour)}`}}>
+      
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-10 h-10 text-inherit">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d={avatarPaths[member.avatar - 1]} />
+                                                    </svg>
                                                 </div>
+                                                <div className="min-w-0 flex flex-col justify-center">
+                                                <p className="text-[15px] font-semibold leading-6 text-gray-900 tracking-wide">{member.username}</p>
+                                                <p className="mt-1 truncate text-[14px] leading-5 text-gray-500 tracking-wide">{member.email}</p>
+                                                </div>
+                                            </div>
+                                            </td>
+                                            <td>
+                                            <div className="p-4 grid grid-flow-row-dense grid-cols-5 grid-rows-1 justify-items-stretch">
+                                                <div className="justify-items-center start-col-2 col-span-4">
+                                                {member.roles.map((role) => (
+                                                    <span key={role} className={`inline-flex items-center rounded-md bg-${role === 'admin' ? 'pink' : 'indigo'}-50 px-4 py-2 text-sm font-medium text-${role === 'admin' ? 'pink' : 'indigo'}-600 ring-1 ring-inset ring-${role === 'admin' ? 'pink' : 'indigo'}-500/10 mr-[10px]`}>
+                                                    {role}
+                                                    <button onClick={() => handleRoleDelete(member.id, role, 'roles')}>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 ml-2 -mr-1">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
+                                                    </span>
+                                                ))}
+                                                {(member.rolestoadd || []).map((role) => (
+                                                    <span key={role} className={`inline-flex items-center rounded-md bg-${role === 'admin' ? 'pink' : 'indigo'}-50 px-4 py-2 text-sm font-medium text-${role === 'admin' ? 'pink' : 'indigo'}-600 ring-1 ring-inset ring-${role === 'admin' ? 'pink' : 'indigo'}-500/10 mr-[10px]`}>
+                                                        {role}
+                                                        <button onClick={() => handleRoleDelete(member.memberId, role, 'rolestoadd')}>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 ml-2 -mr-1">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                                        </svg>
+                                                        </button>
+                                                    </span>
+                                                ))}
+
+                                                </div>
+                                                <div className="col-span-1 start-col-5 justify-items-end">
+                                                <select id="roles" onChange={(e) => handleRoleChange(member.memberId, e.target.value)}  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                                    <option selected disabled>Add role</option>
+                                                    {loading ? (
+                                                    <option>Loading...</option>
+                                                    ) : (
+                                                    roles.map((role) => (
+                                                        <option key={role.id} value={role.id}>{role.name}</option>
+                                                    ))
+                                                    )}
+                                                </select>
+                                                </div>
+                                            </div>
                                             </td>
                                         </tr>
-                                        <tr className="bg-white">
-                                            <td>
-                                                <div className="flex min-w-0 gap-x-4">
-                                                    <div className="bg-clip-border ml-8 mx-4 my-4 rounded-xl overflow-hidden bg-gradient-to-tr from-pink-600 to-pink-400 text-white shadow-pink-500/40 shadow-lg grid h-16 w-16 place-items-center">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-10 h-10 text-inherit">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
-                                                        </svg>
-                                                    </div>
-                                                    <div className="min-w-0 flex flex-col justify-center">
-                                                        <p className="text-[15px] font-semibold leading-6 text-gray-900 tracking-wide">BLIBLOU Lou</p>
-                                                        <p className="mt-1 truncate text-[14px] leading-5 text-gray-500 tracking-wide">loulou@gmail.com</p>
-                                                    </div>
-                                                </div></td>
-                                            <td>
-                                                <div className="p-4 grid grid-flow-row-dense grid-cols-5 grid-rows-1 justify-items-stretch">
-                                                    <div className="justify-items-center start-col-2 col-span-4">
-                                                        <span className="inline-flex items-center rounded-md bg-pink-50 px-4 py-2 text-sm font-medium text-pink-600 ring-1 ring-inset ring-pink-500/10 mr-[10px]"> Admin
-                                                            <button>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-5 h-5 ml-2 -mr-1">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                                                </svg>
-                                                            </button>
-                                                        </span>
-                                                        <span className="inline-flex items-center rounded-md bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-600 ring-1 ring-inset ring-indigo-500/10 mr-[10px]"> Editor
-                                                            <button>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-5 h-5 ml-2 -mr-1">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                                                </svg>
-                                                            </button>
-                                                        </span>
-                                                    </div>
-
-                                                    <div className="col-span-1 start-col-5 justify-items-end">
-                                                        <select id="countries" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                                                            <option selected>Add role</option>
-                                                            <option value="US">Admin</option>
-                                                            <option value="CA">Front</option>
-                                                            <option value="FR">Back</option>
-                                                            <option value="DE">Editor</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr className="bg-blue-100/20">
-                                            <td>
-                                                <div className="flex min-w-0 gap-x-4">
-                                                    <div className="bg-clip-border ml-8 mx-4 my-4 rounded-xl overflow-hidden bg-gradient-to-tr from-yellow-600 to-yellow-400 text-white shadow-yellow-500/40 shadow-lg grid h-16 w-16 place-items-center">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-10 h-10 text-inherit">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 12.75c1.148 0 2.278.08 3.383.237 1.037.146 1.866.966 1.866 2.013 0 3.728-2.35 6.75-5.25 6.75S6.75 18.728 6.75 15c0-1.046.83-1.867 1.866-2.013A24.204 24.204 0 0 1 12 12.75Zm0 0c2.883 0 5.647.508 8.207 1.44a23.91 23.91 0 0 1-1.152 6.06M12 12.75c-2.883 0-5.647.508-8.208 1.44.125 2.104.52 4.136 1.153 6.06M12 12.75a2.25 2.25 0 0 0 2.248-2.354M12 12.75a2.25 2.25 0 0 1-2.248-2.354M12 8.25c.995 0 1.971-.08 2.922-.236.403-.066.74-.358.795-.762a3.778 3.778 0 0 0-.399-2.25M12 8.25c-.995 0-1.97-.08-2.922-.236-.402-.066-.74-.358-.795-.762a3.734 3.734 0 0 1 .4-2.253M12 8.25a2.25 2.25 0 0 0-2.248 2.146M12 8.25a2.25 2.25 0 0 1 2.248 2.146M8.683 5a6.032 6.032 0 0 1-1.155-1.002c.07-.63.27-1.222.574-1.747m.581 2.749A3.75 3.75 0 0 1 15.318 5m0 0c.427-.283.815-.62 1.155-.999a4.471 4.471 0 0 0-.575-1.752M4.921 6a24.048 24.048 0 0 0-.392 3.314c1.668.546 3.416.914 5.223 1.082M19.08 6c.205 1.08.337 2.187.392 3.314a23.882 23.882 0 0 1-5.223 1.082" />
-                                                        </svg>
-
-                                                    </div>
-                                                    <div className="min-w-0 flex flex-col justify-center">
-                                                        <p className="text-[15px] font-semibold leading-6 text-gray-900 tracking-wide">BLIBLOU Lou</p>
-                                                        <p className="mt-1 truncate text-[14px] leading-5 text-gray-500 tracking-wide">loulou@gmail.com</p>
-                                                    </div>
-                                                </div></td>
-                                            <td>
-                                                <div className="p-4 grid grid-flow-row-dense grid-cols-5 grid-rows-1 justify-items-stretch">
-                                                    <div className="justify-items-center start-col-2 col-span-4">
-                                                        <span className="inline-flex items-center rounded-md bg-pink-50 px-4 py-2 text-sm font-medium text-pink-600 ring-1 ring-inset ring-pink-500/10 mr-[10px]"> Admin
-                                                            <button>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-5 h-5 ml-2 -mr-1">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                                                </svg>
-                                                            </button>
-                                                        </span>
-                                                        <span className="inline-flex items-center rounded-md bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-600 ring-1 ring-inset ring-indigo-500/10 mr-[10px]"> Editor
-                                                            <button>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-5 h-5 ml-2 -mr-1">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                                                </svg>
-                                                            </button>
-                                                        </span>
-                                                    </div>
-
-                                                    <div className="col-span-1 start-col-5 justify-items-end">
-                                                        <select id="countries" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                                                            <option selected>Add role</option>
-                                                            <option value="US">Admin</option>
-                                                            <option value="CA">Front</option>
-                                                            <option value="FR">Back</option>
-                                                            <option value="DE">Editor</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr className="bg-white">
-                                            <td>
-                                                <div className="flex min-w-0 gap-x-4">
-                                                    <div className="bg-clip-border ml-8 mx-4 my-4 rounded-xl overflow-hidden bg-gradient-to-tr from-green-600 to-green-400 text-white shadow-green-500/40 shadow-lg grid h-16 w-16 place-items-center">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-10 h-10 text-inherit">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
-                                                        </svg>
-                                                    </div>
-                                                    <div className="min-w-0 flex flex-col justify-center">
-                                                        <p className="text-[15px] font-semibold leading-6 text-gray-900 tracking-wide">BLIBLOU Lou</p>
-                                                        <p className="mt-1 truncate text-[14px] leading-5 text-gray-500 tracking-wide">loulou@gmail.com</p>
-                                                    </div>
-                                                </div></td>
-                                            <td>
-                                                <div className="p-4 grid grid-flow-row-dense grid-cols-5 grid-rows-1 justify-items-stretch">
-                                                    <div className="justify-items-center start-col-2 col-span-4">
-                                                        <span className="inline-flex items-center rounded-md bg-pink-50 px-4 py-2 text-sm font-medium text-pink-600 ring-1 ring-inset ring-pink-500/10 mr-[10px]"> Admin
-                                                            <button>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-5 h-5 ml-2 -mr-1">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                                                </svg>
-                                                            </button>
-                                                        </span>
-                                                        <span className="inline-flex items-center rounded-md bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-600 ring-1 ring-inset ring-indigo-500/10 mr-[10px]"> Editor
-                                                            <button>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-5 h-5 ml-2 -mr-1">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                                                </svg>
-                                                            </button>
-                                                        </span>
-                                                        <span className="inline-flex items-center rounded-md bg-sky-50 px-4 py-2 text-sm font-medium text-sky-600 ring-1 ring-inset ring-sky-500/10"> Publisher
-                                                            <button>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-5 h-5 ml-2 -mr-1">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                                                </svg>
-                                                            </button>
-                                                        </span>
-                                                    </div>
-
-                                                    <div className="col-span-1 start-col-5 justify-items-end">
-                                                        <select id="countries" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                                                            <option selected>Add role</option>
-                                                            <option value="US">Admin</option>
-                                                            <option value="CA">Front</option>
-                                                            <option value="FR">Back</option>
-                                                            <option value="DE">Editor</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr className="bg-blue-100/20">
-                                            <td>
-                                                <div className="flex min-w-0 gap-x-4">
-                                                    <div className="bg-clip-border ml-8 mx-4 my-4 rounded-xl overflow-hidden bg-gradient-to-tr from-blue-600 to-blue-400 text-white shadow-blue-500/40 shadow-lg grid h-16 w-16 place-items-center">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-10 h-10 text-inherit">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42" />
-                                                        </svg>
-                                                    </div>
-                                                    <div className="min-w-0 flex flex-col justify-center">
-                                                        <p className="text-[15px] font-semibold leading-6 text-gray-900 tracking-wide">BLIBLOU Lou</p>
-                                                        <p className="mt-1 truncate text-[14px] leading-5 text-gray-500 tracking-wide">loulou@gmail.com</p>
-                                                    </div>
-                                                </div></td>
-                                            <td>
-                                                <div className="p-4 grid grid-flow-row-dense grid-cols-5 grid-rows-1 justify-items-stretch">
-                                                    <div className="justify-items-center start-col-2 col-span-4">
-                                                        <span className="inline-flex items-center rounded-md bg-pink-50 px-4 py-2 text-sm font-medium text-pink-600 ring-1 ring-inset ring-pink-500/10 mr-[10px]"> Admin
-                                                            <button>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-5 h-5 ml-2 -mr-1">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                                                </svg>
-                                                            </button>
-                                                        </span>
-                                                        <span className="inline-flex items-center rounded-md bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-600 ring-1 ring-inset ring-indigo-500/10 mr-[10px]"> Editor
-                                                            <button>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-5 h-5 ml-2 -mr-1">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                                                </svg>
-                                                            </button>
-                                                        </span>
-
-                                                    </div>
-
-                                                    <div className="col-span-1 start-col-5 justify-items-end">
-                                                        <select id="countries" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                                                            <option selected>Add role</option>
-                                                            <option value="US">Admin</option>
-                                                            <option value="CA">Front</option>
-                                                            <option value="FR">Back</option>
-                                                            <option value="DE">Editor</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                    ))}
                                     </tbody>
                                 </table>
                                 <div className="flex items-center justify-between mt-10 mb-6">
