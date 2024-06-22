@@ -128,7 +128,7 @@ export default function Marketplace() {
 						{filteredModules.map((module) => (
 							<div key={module.id} className="relative flex flex-col bg-clip-border rounded-xl bg-white text-gray-700 shadow-md">
 								{ModuleTemplates[module.id] ? ModuleTemplates[module.id].icon : ModuleTemplates[0].icon}
-								<div className={`p-4 flex flex-col items-end text-right bg-gradient-to-r from-white from-70% to-${ModuleTemplates[module.id] ? ModuleTemplates[module.id].colorTo : ModuleTemplates[0].colorTo} bg-clip-border rounded-xl rounded-b-none`}>
+								<div className={`p-4 flex flex-col items-end text-right bg-gradient-to-r from-white from-70% ${ModuleTemplates[module.id] ? ModuleTemplates[module.id].colorTo : ModuleTemplates[0].colorTo} bg-clip-border rounded-xl rounded-b-none`}>
 									<button onClick={() => handleCheck(module.id)} >
 										{module.checked ?
 											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-green-500 mb-5">

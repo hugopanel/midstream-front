@@ -6,7 +6,7 @@ import SideBare from "../navigation/sideBare";
 import SearchBare from '../navigation/searchBare';
 
 const maxFilesOnPage = 7;
-const page = 'files';
+const page = 'Files';
 export default function FileExplorer() {
 	const [selectedPage, setSelectedPage] = useState<number>(1);
 	const [navPages, setNavPages] = useState<number[]>([1]);
