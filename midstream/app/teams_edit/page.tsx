@@ -98,12 +98,23 @@ interface User {
     avatar: string;
     colour: string;
     roles: string[];
+    rolestoadd: string[];
 }
 
 interface Role{
     id: string;
     name: string;
     permissions : string[];
+}
+
+interface MemberRoleToAdd{
+    memberId: string;
+    roleId: string;
+}
+
+interface MemberToAdd{
+    userId: string;
+    rolesId: string[];
 }
 
 export default function MyComponent() {
@@ -116,7 +127,7 @@ export default function MyComponent() {
     const [teamName, setTeamName] = useState<string>('');
     const [members, setMembers] = useState<Member[]>([]);
     const [membersToAdd, setMembersToAdd] = useState<User[]>([]);
-    const [membersAdded, setMembersAdded] = useState<Member[]>([]);
+    const [membersAdded, setMembersAdded] = useState<User[]>([]);
     const [teams, setTeams] = useState<Team[]>([]);
     const [roles, setRoles] = useState<Role[]>([]);
 
@@ -136,8 +147,7 @@ export default function MyComponent() {
         const red = parseInt(cleanedHex.substring(0, 2), 16);
         const green = parseInt(cleanedHex.substring(2, 4), 16);
         const blue = parseInt(cleanedHex.substring(4, 6), 16);
-
-        console.log(`rgba(${red}, ${green}, ${blue},1)`);
+        
         // Return the RGB value as a string
         return `rgba(${red}, ${green}, ${blue},1)`;
     };
@@ -161,7 +171,6 @@ export default function MyComponent() {
         try {
           const response = await fetch('/api/roles');
           const data = await response.json();
-          console.log(data);
           //setProjects(data.projects);
           setRoles(data.roles);
         } catch (error) {
@@ -172,7 +181,7 @@ export default function MyComponent() {
     };
 
 
-    const getMembers = async (teamId) => {
+    const getMembers = async (teamId: string | null) => {
         // setLoadingEmail('Loading...');
         // setErrorEmail('');
         
@@ -191,13 +200,12 @@ export default function MyComponent() {
             }
 
             const data = await response.json();
-            console.log(data);
             setMembers(data.members);
             // localStorage.setItem('token', data.token);
             // setSuccessEmail('Email updated.');
         } catch (error: any) {
             // setErrorEmail(error.message);
-            console.error('Error logging in:', error);
+            console.error('Error getting members:', error);
         } finally {
             // setLoadingEmail('');
         }
@@ -222,7 +230,6 @@ export default function MyComponent() {
             }
 
             const data = await response.json();
-            console.log(data);
             setMembersToAdd(data.users);
             // localStorage.setItem('token', data.token);
             // setSuccessEmail('Email updated.');
@@ -238,10 +245,8 @@ export default function MyComponent() {
         // setLoadingEmail('Loading...');
         // setErrorEmail('');
 
-        console.log(teamId);
         
         try {
-            console.log(teamId);
             const response = await fetch('/api/get_team_name', {
                 method: 'POST',
                 headers: {
@@ -256,7 +261,6 @@ export default function MyComponent() {
             }
 
             const data = await response.json();
-            console.log(data);
             setTeamName(data.teamName);
             // localStorage.setItem('token', data.token);
             // setSuccessEmail('Email updated.');
@@ -298,16 +302,83 @@ export default function MyComponent() {
         }
     };
 
+    const updateTeam = async () => {
+        // setLoadingEmail('Loading...');
+        // setErrorEmail('');
+
+        var membersroletoadd: MemberRoleToAdd[] = [];
+        var memberstoadd: MemberToAdd[] = [];
+        
+        members.forEach((member) => {
+            (member.roles|| []).forEach((role) => {  
+                var roleId = roles.find((r) => r.name === role).id;
+                membersroletoadd.push({memberId: member.memberId, roleId: roleId});
+            });
+            (member.rolestoadd|| []).forEach((role) => {  
+                var roleId = roles.find((r) => r.name === role).id;
+                membersroletoadd.push({memberId: member.memberId, roleId: roleId});
+            });
+        });
+
+        membersAdded.forEach((member) => {
+            var rolesId: string[] = [];
+            (member.rolestoadd|| []).forEach((role) => {  
+                var roleId = roles.find((r) => r.name === role).id;
+                rolesId.push(roleId);
+            });
+            if(member.rolestoadd == 0){
+                var roleId = roles.find((r) => r.name === "viewer").id;
+                rolesId.push(roleId);
+            }
+            console.log("roledId : ", rolesId);
+            memberstoadd.push({userId: member.userId, rolesId : rolesId});
+        });
+        
+        if(memberstoadd.length == 0){
+            memberstoadd.push({userId: '', rolesId : []});
+        }
+
+        if(membersroletoadd.length == 0){
+            membersroletoadd.push({memberId: '', roleId: ''});
+        }
+
+        console.log(membersroletoadd);
+        console.log(memberstoadd);
+        
+        try {
+            const response = await fetch('/api/update_team', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ teamId, name : teamName, memberstoadd, membersroletoadd}),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to update the team');
+            }
+
+            const data = await response.json();
+            console.log(data);
+            //router.push('/teams');
+            // localStorage.setItem('token', data.token);
+            // setSuccessEmail('Email updated.');
+        } catch (error: any) {
+            // setErrorEmail(error.message);
+            console.error('Error updating the team:', error);
+        } finally {
+            // setLoadingEmail('');
+        }
+    };
+
     useEffect(() => {
         const teamIdQuery = searchParams.get('teamId');
         fetchRoles();
-        console.log(teamIdQuery);
         if(teamIdQuery == "null") {
             console.log('create');
         }else{
             setTeamId(teamIdQuery);
-            console.log('edit');
-            console.log(teamId);
             getMembers(teamIdQuery);
             getMemberstoAdd(teamIdQuery);
             getTeamName(teamIdQuery);
@@ -334,15 +405,12 @@ export default function MyComponent() {
         );
       };
 
-      const handleRoleToAddChange = (memberId, roleId) => {
-        console.log(memberId, roleId);
+      const handleRoleToAddChange = (userId, roleId) => {
         const selectedRole = roles.find((role) => role.id === roleId);
         const roleName = selectedRole ? selectedRole.name : '';
-        console.log(roleName);
-    
         setMembersAdded((prevMembers) =>
           prevMembers.map((member) =>
-            member.memberId === memberId
+            member.userId === userId
               ? {
                   ...member,
                   rolestoadd: member.rolestoadd
@@ -355,7 +423,7 @@ export default function MyComponent() {
       };
 
       const handleRoleDelete = (memberId, roleName, listType) => {
-        setMembers((prevMember) =>
+        setMembers((prevMembers) =>
           prevMembers.map((member) =>
             member.memberId === memberId
               ? {
@@ -367,10 +435,10 @@ export default function MyComponent() {
         );
       };
 
-      const handleRoleToAddDelete = (memberId, roleName, listType) => {
+      const handleRoleToAddDelete = (userId, roleName, listType) => {
         setMembersAdded((prevMembersAdded) =>
           prevMembersAdded.map((member) =>
-            member.memberId === memberId
+            member.userId === userId
               ? {
                   ...member,
                   [listType]: member[listType].filter((role) => role !== roleName),
@@ -380,12 +448,12 @@ export default function MyComponent() {
         );
       };
 
-      const handleMemberAdd = (userId) => {
+      const handleMemberAdd = (userId: string) => {
         const selectedMember = membersToAdd.find((member) => member.userId === userId);
     
         if (selectedMember) {
-          const newMember: Member = {
-            memberId: selectedMember.userId,
+          const newMember: User = {
+            userId: selectedMember.userId,
             username: selectedMember.username,
             email: selectedMember.email,
             avatar: selectedMember.avatar,
@@ -554,13 +622,11 @@ export default function MyComponent() {
                                     </Listbox>
                                 </div> */}
                                 <div className="flex items-center mt-4 gap-x-3 mr-[17px]">
-                                    <Link href="/teams_edit">
-                                        <button className="w-1/2 px-5 py-2 text-sm text-gray-800 transition-colors duration-200 bg-white border rounded-lg sm:w-auto hover:bg-gray-100">
+                                        <button onClick={() => updateTeam()} className="w-1/2 px-5 py-2 text-sm text-gray-800 transition-colors duration-200 bg-white border rounded-lg sm:w-auto hover:bg-gray-100">
                                             Save Changes
                                         </button>
-                                    </Link>
                                         
-                                        <button  onClick={() => deleteTeam()}className="flex items-center justify-center w-1/2 px-5 py-2 text-sm tracking-wide text-white transition-colors duration-200 bg-gradient-to-tr from-red-600 to-orange-400 rounded-lg sm:w-auto gap-x-2 hover:bg-gradient-to-l from-red-600 to-orange-400">
+                                        <button  onClick={() => deleteTeam()} className="flex items-center justify-center w-1/2 px-5 py-2 text-sm tracking-wide text-white transition-colors duration-200 bg-gradient-to-tr from-red-600 to-orange-400 rounded-lg sm:w-auto gap-x-2 hover:bg-gradient-to-l from-red-600 to-orange-400">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-6">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                                             </svg>
@@ -605,7 +671,7 @@ export default function MyComponent() {
                                                 {member.roles.map((role) => (
                                                     <span key={role} className={`inline-flex items-center rounded-md bg-${role === 'admin' ? 'pink' : 'indigo'}-50 px-4 py-2 text-sm font-medium text-${role === 'admin' ? 'pink' : 'indigo'}-600 ring-1 ring-inset ring-${role === 'admin' ? 'pink' : 'indigo'}-500/10 mr-[10px]`}>
                                                     {role}
-                                                    <button onClick={() => handleRoleDelete(member.id, role, 'roles')}>
+                                                    <button onClick={() => handleRoleDelete(member.memberId, role, 'roles')}>
                                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 ml-2 -mr-1">
                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                                                         </svg>
@@ -641,7 +707,7 @@ export default function MyComponent() {
                                         </tr>
                                     ))}
                                     {(membersAdded || []).map((member, index) => (
-                                        <tr key={member.memberId} className={index % 2 === 0 ? 'bg-blue-100/20' : 'bg-white'}>
+                                        <tr key={member.userId} className={index % 2 === 0 ? 'bg-blue-100/20' : 'bg-white'}>
                                             <td>
                                             <div className="flex min-w-0 gap-x-4">
                                                 <div className={`bg-clip-border ml-8 mx-4 my-4 rounded-xl overflow-hidden text-white shadow-[${hexToRgb(member.colour)}] shadow-lg grid h-16 w-16 place-items-center`} style={{ backgroundColor: hexToRgb(member.colour), boxShadow: `0px 10px 15px -3px ${hexToRgb(member.colour)}`}}>
@@ -659,20 +725,10 @@ export default function MyComponent() {
                                             <td>
                                             <div className="p-4 grid grid-flow-row-dense grid-cols-5 grid-rows-1 justify-items-stretch">
                                                 <div className="justify-items-center start-col-2 col-span-4">
-                                                {member.roles.map((role) => (
-                                                    <span key={role} className={`inline-flex items-center rounded-md bg-${role === 'admin' ? 'pink' : 'indigo'}-50 px-4 py-2 text-sm font-medium text-${role === 'admin' ? 'pink' : 'indigo'}-600 ring-1 ring-inset ring-${role === 'admin' ? 'pink' : 'indigo'}-500/10 mr-[10px]`}>
-                                                    {role}
-                                                    <button onClick={() => handleRoleToAddDelete(member.id, role, 'roles')}>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 ml-2 -mr-1">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                                        </svg>
-                                                    </button>
-                                                    </span>
-                                                ))}
                                                 {(member.rolestoadd || []).map((role) => (
                                                     <span key={role} className={`inline-flex items-center rounded-md bg-${role === 'admin' ? 'pink' : 'indigo'}-50 px-4 py-2 text-sm font-medium text-${role === 'admin' ? 'pink' : 'indigo'}-600 ring-1 ring-inset ring-${role === 'admin' ? 'pink' : 'indigo'}-500/10 mr-[10px]`}>
                                                         {role}
-                                                        <button onClick={() => handleRoleToAddDelete(member.memberId, role, 'rolestoadd')}>
+                                                        <button onClick={() => handleRoleToAddDelete(member.userId, role, 'rolestoadd')}>
                                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 ml-2 -mr-1">
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                                                         </svg>
@@ -682,7 +738,7 @@ export default function MyComponent() {
 
                                                 </div>
                                                 <div className="col-span-1 start-col-5 justify-items-end">
-                                                <select id="roles" onChange={(e) => handleRoleToAddChange(member.memberId, e.target.value)}  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                                <select id="roles" onChange={(e) => handleRoleToAddChange(member.userId, e.target.value)}  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                                                     <option selected disabled>Add role</option>
                                                     {loading ? (
                                                     <option>Loading...</option>
