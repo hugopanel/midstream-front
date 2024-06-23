@@ -50,7 +50,7 @@ export default function Marketplace() {
     const handleCreateClick = () => {
         // Logic to handle edit action
         // For demonstration, let's navigate to `/teams_edit?teamId=<teamId>`
-        router.push('/teams_edit?teamId=' + null);
+        router.push('/teams_create');
     };
 
     const hexToRgb = (hex: string): string => {

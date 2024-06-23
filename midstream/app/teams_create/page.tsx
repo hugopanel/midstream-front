@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import Image from "next/image";
 import Link from 'next/link';
+import { getPackedSettings } from 'http2';
 import logo from '../assets/logo2.png';
 
 function classNames(...classes: string[]) {
@@ -12,20 +13,14 @@ function classNames(...classes: string[]) {
 }
 
 interface Team {
-    id: string;
     name: string;
     projectid: string;
     members: [];
 }
 
-interface Member {
-    memberId: string;
-    username: string;
-    email: string;
-    avatar: string;
-    colour: string;
-    roles: string[];
-    rolestoadd: string[];
+interface Project {
+    id: string;
+    name: string;
 }
 
 interface User {
@@ -44,28 +39,19 @@ interface Role{
     permissions : string[];
 }
 
-interface MemberRoleToAdd{
-    memberId: string;
-    roleId: string;
-}
-
-interface MemberToAdd{
+interface UserToAdd{
     userId: string;
     rolesId: string[];
 }
 
 export default function MyComponent() {
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const [SelectedProjectId, setSelectedProjectId] = useState<string | null>(null);    
-    const [loading, setLoading] = useState(true);
-    const [teamId, setTeamId] = useState<string | null >('');
     const [teamName, setTeamName] = useState<string>('');
-    const [members, setMembers] = useState<Member[]>([]);
     const [membersToAdd, setMembersToAdd] = useState<User[]>([]);
     const [membersAdded, setMembersAdded] = useState<User[]>([]);
-    const [teams, setTeams] = useState<Team[]>([]);
+    const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);   
     const [roles, setRoles] = useState<Role[]>([]);
+    const [projects, setProjects] = useState<Project[]>([]);
 
     const [avatarPaths] = useState([
         "M12 12.75c1.148 0 2.278.08 3.383.237 1.037.146 1.866.966 1.866 2.013 0 3.728-2.35 6.75-5.25 6.75S6.75 18.728 6.75 15c0-1.046.83-1.867 1.866-2.013A24.204 24.204 0 0 1 12 12.75Zm0 0c2.883 0 5.647.508 8.207 1.44a23.91 23.91 0 0 1-1.152 6.06M12 12.75c-2.883 0-5.647.508-8.208 1.44.125 2.104.52 4.136 1.153 6.06M12 12.75a2.25 2.25 0 0 0 2.248-2.354M12 12.75a2.25 2.25 0 0 1-2.248-2.354M12 8.25c.995 0 1.971-.08 2.922-.236.403-.066.74-.358.795-.762a3.778 3.778 0 0 0-.399-2.25M12 8.25c-.995 0-1.97-.08-2.922-.236-.402-.066-.74-.358-.795-.762a3.734 3.734 0 0 1 .4-2.253M12 8.25a2.25 2.25 0 0 0-2.248 2.146M12 8.25a2.25 2.25 0 0 1 2.248 2.146M8.683 5a6.032 6.032 0 0 1-1.155-1.002c.07-.63.27-1.222.574-1.747m.581 2.749A3.75 3.75 0 0 1 15.318 5m0 0c.427-.283.815-.62 1.155-.999a4.471 4.471 0 0 0-.575-1.752M4.921 6a24.048 24.048 0 0 0-.392 3.314c1.668.546 3.416.914 5.223 1.082M19.08 6c.205 1.08.337 2.187.392 3.314a23.882 23.882 0 0 1-5.223 1.082",
@@ -93,9 +79,8 @@ export default function MyComponent() {
           const response = await fetch('/api/projects');
           const data = await response.json();
           //setProjects(data.projects);
-          if (data.projects.length > 0) {
-            setSelectedProjectId(data.projects[0].id);
-          }
+          setProjects(data.projects);
+          setSelectedProjectId(data.projects[0].id);
         } catch (error) {
           console.error('Error fetching projects:', error);
         } finally {
@@ -116,53 +101,22 @@ export default function MyComponent() {
         }
     };
 
-
-    const getMembers = async (teamId: string | null) => {
+    const getUsers = async () => {
         // setLoadingEmail('Loading...');
         // setErrorEmail('');
         
         try {
-            const response = await fetch('/api/get_members_by_team', {
+            const response = await fetch('/api/users', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ teamId }),
+                body: JSON.stringify({ }),
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to get the members of the team');
-            }
-
-            const data = await response.json();
-            setMembers(data.members);
-            // localStorage.setItem('token', data.token);
-            // setSuccessEmail('Email updated.');
-        } catch (error: any) {
-            // setErrorEmail(error.message);
-            console.error('Error getting members:', error);
-        } finally {
-            // setLoadingEmail('');
-        }
-    };
-
-    const getMemberstoAdd = async (teamId) => {
-        // setLoadingEmail('Loading...');
-        // setErrorEmail('');
-        
-        try {
-            const response = await fetch('/api/get_members_not_in_team', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ teamId }),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to get the members of the team');
+                throw new Error(errorData.message || 'Failed to get the users');
             }
 
             const data = await response.json();
@@ -171,90 +125,13 @@ export default function MyComponent() {
             // setSuccessEmail('Email updated.');
         } catch (error: any) {
             // setErrorEmail(error.message);
-            console.error('Error logging in:', error);
-        } finally {
-            setLoading(false);
+            console.error('Error getting users : ', error);
         }
     };
 
-    const getTeamName = async (teamId) => {
-        // setLoadingEmail('Loading...');
-        // setErrorEmail('');
-
-        
-        try {
-            const response = await fetch('/api/get_team_name', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ teamId }),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to get the members of the team');
-            }
-
-            const data = await response.json();
-            setTeamName(data.teamName);
-            // localStorage.setItem('token', data.token);
-            // setSuccessEmail('Email updated.');
-        } catch (error: any) {
-            // setErrorEmail(error.message);
-            console.error('Error logging in:', error);
-        } finally {
-            // setLoadingEmail('');
-        }
-    };
-
-    const deleteTeam = async () => {
-        // setLoadingEmail('Loading...');
-        // setErrorEmail('');
-        
-        try {
-            const response = await fetch('/api/delete_team', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ teamId }),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to get the members of the team');
-            }
-
-            const data = await response.json();
-            router.push('/teams');
-            // localStorage.setItem('token', data.token);
-            // setSuccessEmail('Email updated.');
-        } catch (error: any) {
-            // setErrorEmail(error.message);
-            console.error('Error deleting the team:', error);
-        } finally {
-            // setLoadingEmail('');
-        }
-    };
-
-    const updateTeam = async () => {
-        // setLoadingEmail('Loading...');
-        // setErrorEmail('');
-
-        var membersroletoadd: MemberRoleToAdd[] = [];
-        var memberstoadd: MemberToAdd[] = [];
-        
-        members.forEach((member) => {
-            (member.roles|| []).forEach((role) => {  
-                var roleId = roles.find((r) => r.name === role).id;
-                membersroletoadd.push({memberId: member.memberId, roleId: roleId});
-            });
-            (member.rolestoadd|| []).forEach((role) => {  
-                var roleId = roles.find((r) => r.name === role).id;
-                membersroletoadd.push({memberId: member.memberId, roleId: roleId});
-            });
-        });
+    
+    const createTeam = async () => {
+        var memberstoadd: UserToAdd[] = [];
 
         membersAdded.forEach((member) => {
             var rolesId: string[] = [];
@@ -262,86 +139,49 @@ export default function MyComponent() {
                 var roleId = roles.find((r) => r.name === role).id;
                 rolesId.push(roleId);
             });
-            if(member.rolestoadd == 0){
+            if(member.rolestoadd.length == 0){
                 var roleId = roles.find((r) => r.name === "viewer").id;
                 rolesId.push(roleId);
             }
-            console.log("roledId : ", rolesId);
             memberstoadd.push({userId: member.userId, rolesId : rolesId});
         });
         
         if(memberstoadd.length == 0){
             memberstoadd.push({userId: '', rolesId : []});
         }
-
-        if(membersroletoadd.length == 0){
-            membersroletoadd.push({memberId: '', roleId: ''});
-        }
-
-        console.log(membersroletoadd);
-        console.log(memberstoadd);
         
         try {
-            const response = await fetch('/api/update_team', {
+            const response = await fetch('/api/create_team', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ teamId, name : teamName, memberstoadd, membersroletoadd}),
+                body: JSON.stringify({ ProjectId : selectedProjectId, memberstoadd}),
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to update the team');
+                throw new Error(errorData.message || 'Failed to create the team');
             }
 
             const data = await response.json();
             console.log(data);
             router.push('/teams');
-            // localStorage.setItem('token', data.token);
-            // setSuccessEmail('Email updated.');
         } catch (error: any) {
-            // setErrorEmail(error.message);
-            console.error('Error updating the team:', error);
-        } finally {
-            // setLoadingEmail('');
+            console.error('Error creating the team:', error);
         }
     };
 
-    useEffect(() => {
-        const teamIdQuery = searchParams.get('teamId');
+    useEffect(() => {    
+        fetchProjects();
         fetchRoles();
-        if(teamIdQuery == "null") {
-            console.log('create');
-        }else{
-            setTeamId(teamIdQuery);
-            getMembers(teamIdQuery);
-            getMemberstoAdd(teamIdQuery);
-            getTeamName(teamIdQuery);
-        }
-      }, [searchParams]);
+        getUsers();
+      }, []);
 
     const handleTeamNameChange = (e: ChangeEvent<HTMLInputElement>) => setTeamName(e.target.value);
+    const handleSelectedProjectChange = (e: ChangeEvent<HTMLInputElement>) => setSelectedProjectId(e.target.value);
 
-    const handleRoleChange = (memberId, roleId) => {
-        const selectedRole = roles.find((role) => role.id === roleId);
-        const roleName = selectedRole ? selectedRole.name : '';
-    
-        setMembers((prevMembers) =>
-          prevMembers.map((member) =>
-            member.memberId === memberId
-              ? {
-                  ...member,
-                  rolestoadd: member.rolestoadd
-                    ? [...member.rolestoadd, roleName]
-                    : [roleName],
-                }
-              : member
-          )
-        );
-      };
-
-      const handleRoleToAddChange = (userId, roleId) => {
+    const handleRoleToAddChange = (userId, roleId) => {
         const selectedRole = roles.find((role) => role.id === roleId);
         const roleName = selectedRole ? selectedRole.name : '';
         setMembersAdded((prevMembers) =>
@@ -356,22 +196,9 @@ export default function MyComponent() {
               : member
           )
         );
-      };
-
-      const handleRoleDelete = (memberId, roleName, listType) => {
-        setMembers((prevMembers) =>
-          prevMembers.map((member) =>
-            member.memberId === memberId
-              ? {
-                  ...member,
-                  [listType]: member[listType].filter((role) => role !== roleName),
-                }
-              : member
-          )
-        );
-      };
-
-      const handleRoleToAddDelete = (userId, roleName, listType) => {
+    };
+    
+    const handleRoleToAddDelete = (userId, roleName, listType) => {
         setMembersAdded((prevMembersAdded) =>
           prevMembersAdded.map((member) =>
             member.userId === userId
@@ -402,7 +229,7 @@ export default function MyComponent() {
         }
       };
 
-      
+    
     return (
         <div className="min-h-screen bg-gradient-to-r from-indigo-500 from-5% via-blue-300 via-30% to-cyan-50 to-95%">
             <div className="p-4">
@@ -469,8 +296,14 @@ export default function MyComponent() {
                         <div className="relative flex flex-col bg-clip-border rounded-xl bg-white text-gray-700 shadow-md overflow-hidden xl:col-span-3">
                             <div className="relative bg-clip-border rounded-xl overflow-hidden bg-transparent text-gray-700 shadow-none m-0 flex flex-wrap items-center justify-between p-6">
                                 <div>
-
-                                    <input type="text" name="teamName" id="teamName" value={ teamName } onChange={handleTeamNameChange} className="block font-semibold uppercase text-center ml-[17px] py-2.5 px-0 w-full text-m text-gray-700 bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200 peer" />
+                                    <label htmlFor="underline_select" className="sr-only">Underline select</label>
+                                    <select id="underline_select" className="block font-semibold uppercase text-center ml-[17px] py-2.5 px-0 w-full text-m text-gray-700 bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200 peer" value={selectedProjectId || ''} onChange={handleSelectedProjectChange}>
+                                        <option selected disabled>Choose a team</option>
+                                        {projects.map((project) => (
+                                            <option key={project.id} value={project.id}>{project.name}</option>
+                                        )
+                                        )}
+                                    </select>
                                 </div>
                                 <div className="pt-2 relative mx-auto text-gray-600">
                                     <input className="border-2 border-gray-300 bg-white h-10 px-5 pr-16 rounded-lg text-sm focus:outline-none"
@@ -488,87 +321,24 @@ export default function MyComponent() {
                                 <div className="pt-2 relative mx-auto text-gray-600">
                                     <select id="countries" onChange={(e) => handleMemberAdd(e.target.value)} className="border-2 border-gray-300 bg-white h-10 px-5 pr-16 rounded-lg text-sm focus:outline-none">
                                         <option selected disabled>Add member</option>
-                                        {loading ? (
-                                        <option>Loading...</option>
-                                        ) : (
-                                        membersToAdd.map((memberToAdd) => (
-                                            <option key={memberToAdd.userId} value={memberToAdd.userId}>{memberToAdd.username}</option>
-                                        ))
+                                        {membersToAdd.map((userToAdd) => (
+                                            <option key={userToAdd.userId} value={userToAdd.userId}>{userToAdd.username}</option>
+                                        )
                                         )}
                                     </select>
                                 </div>
-                                {/* <div className="relative">
-                                    <Listbox value={selected} onChange={setSelected}>
-                                        {({ open }) => (
-                                            <>
-                                                
-                                                <div className="mt-2 relative">
-                                                    <ListboxButton className="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm sm:leading-6">
-                                                        <span className="flex items-center">
-                                                            <span className="ml-3 block truncate">{selected.name}</span>
-                                                        </span>
-                                                        <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
-                                                            <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-                                                        </span>
-                                                    </ListboxButton>
-
-                                                    <Transition show={open} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-                                                        <ListboxOptions className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                                                            {people.map((person) => (
-                                                                <ListboxOption
-                                                                    key={person.id}
-                                                                    className={({ focus }) =>
-                                                                        classNames(
-                                                                            focus ? 'bg-indigo-600 text-white' : '',
-                                                                            !focus ? 'text-gray-900' : '',
-                                                                            'relative cursor-default select-none py-2 pl-3 pr-9'
-                                                                        )
-                                                                    }
-                                                                    value={person}
-                                                                >
-                                                                    {({ selected, focus }) => (
-                                                                        <>
-                                                                            <div className="flex items-center">
-                                                                                <span
-                                                                                    className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}
-                                                                                >
-                                                                                    {person.name}
-                                                                                </span>
-                                                                            </div>
-
-                                                                            {selected ? (
-                                                                                <span
-                                                                                    className={classNames(
-                                                                                        focus ? 'text-white' : 'text-indigo-600',
-                                                                                        'absolute inset-y-0 right-0 flex items-center pr-4'
-                                                                                    )}
-                                                                                >
-                                                                                    <CheckIcon className="h-5 w-5" aria-hidden="true" />
-                                                                                </span>
-                                                                            ) : null}
-                                                                        </>
-                                                                    )}
-                                                                </ListboxOption>
-                                                            ))}
-                                                        </ListboxOptions>
-                                                    </Transition>
-                                                </div>
-                                            </>
-                                        )}
-                                    </Listbox>
-                                </div> */}
+                                
                                 <div className="flex items-center mt-4 gap-x-3 mr-[17px]">
-                                        <button onClick={() => updateTeam()} className="w-1/2 px-5 py-2 text-sm text-gray-800 transition-colors duration-200 bg-white border rounded-lg sm:w-auto hover:bg-gray-100">
-                                            Save Changes
-                                        </button>
-                                        
-                                        <button  onClick={() => deleteTeam()} className="flex items-center justify-center w-1/2 px-5 py-2 text-sm tracking-wide text-white transition-colors duration-200 bg-gradient-to-tr from-red-600 to-orange-400 rounded-lg sm:w-auto gap-x-2 hover:bg-gradient-to-l from-red-600 to-orange-400">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-6">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                                            </svg>
+                                    <button onClick={() => createTeam()} className="w-1/2 px-5 py-2 text-sm text-gray-800 transition-colors duration-200 bg-white border rounded-lg sm:w-auto hover:bg-gray-100">
+                                        Save Changes
+                                    </button>
+                                    <button  onClick={() => router.push('/teams')} className="flex items-center justify-center w-1/2 px-5 py-2 text-sm tracking-wide text-white transition-colors duration-200 bg-gradient-to-tr from-red-600 to-orange-400 rounded-lg sm:w-auto gap-x-2 hover:bg-gradient-to-l from-red-600 to-orange-400">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                        </svg>
 
-                                            <span>Delete Team</span>
-                                        </button>
+                                        <span>Delete Team</span>
+                                    </button>
                                 </div>
                             </div>
                             <div className="p-6 pt-0 pb-2 mt-5">
@@ -585,63 +355,6 @@ export default function MyComponent() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                    {members.map((member, index) => (
-                                        <tr key={member.memberId} className={index % 2 === 0 ? 'bg-blue-100/20' : 'bg-white'}>
-                                            <td>
-                                            <div className="flex min-w-0 gap-x-4">
-                                                <div className={`bg-clip-border ml-8 mx-4 my-4 rounded-xl overflow-hidden text-white shadow-[${hexToRgb(member.colour)}] shadow-lg grid h-16 w-16 place-items-center`} style={{ backgroundColor: hexToRgb(member.colour), boxShadow: `0px 10px 15px -3px ${hexToRgb(member.colour)}`}}>
-      
-                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-10 h-10 text-inherit">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d={avatarPaths[member.avatar - 1]} />
-                                                    </svg>
-                                                </div>
-                                                <div className="min-w-0 flex flex-col justify-center">
-                                                <p className="text-[15px] font-semibold leading-6 text-gray-900 tracking-wide">{member.username}</p>
-                                                <p className="mt-1 truncate text-[14px] leading-5 text-gray-500 tracking-wide">{member.email}</p>
-                                                </div>
-                                            </div>
-                                            </td>
-                                            <td>
-                                            <div className="p-4 grid grid-flow-row-dense grid-cols-5 grid-rows-1 justify-items-stretch">
-                                                <div className="justify-items-center start-col-2 col-span-4">
-                                                {member.roles.map((role) => (
-                                                    <span key={role} className={`inline-flex items-center rounded-md bg-${role === 'admin' ? 'pink' : 'indigo'}-50 px-4 py-2 text-sm font-medium text-${role === 'admin' ? 'pink' : 'indigo'}-600 ring-1 ring-inset ring-${role === 'admin' ? 'pink' : 'indigo'}-500/10 mr-[10px]`}>
-                                                    {role}
-                                                    <button onClick={() => handleRoleDelete(member.memberId, role, 'roles')}>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 ml-2 -mr-1">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                                        </svg>
-                                                    </button>
-                                                    </span>
-                                                ))}
-                                                {(member.rolestoadd || []).map((role) => (
-                                                    <span key={role} className={`inline-flex items-center rounded-md bg-${role === 'admin' ? 'pink' : 'indigo'}-50 px-4 py-2 text-sm font-medium text-${role === 'admin' ? 'pink' : 'indigo'}-600 ring-1 ring-inset ring-${role === 'admin' ? 'pink' : 'indigo'}-500/10 mr-[10px]`}>
-                                                        {role}
-                                                        <button onClick={() => handleRoleDelete(member.memberId, role, 'rolestoadd')}>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 ml-2 -mr-1">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                                        </svg>
-                                                        </button>
-                                                    </span>
-                                                ))}
-
-                                                </div>
-                                                <div className="col-span-1 start-col-5 justify-items-end">
-                                                <select id="roles" onChange={(e) => handleRoleChange(member.memberId, e.target.value)}  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                                                    <option selected disabled>Add role</option>
-                                                    {loading ? (
-                                                    <option>Loading...</option>
-                                                    ) : (
-                                                    roles.map((role) => (
-                                                        <option key={role.id} value={role.id}>{role.name}</option>
-                                                    ))
-                                                    )}
-                                                </select>
-                                                </div>
-                                            </div>
-                                            </td>
-                                        </tr>
-                                    ))}
                                     {(membersAdded || []).map((member, index) => (
                                         <tr key={member.userId} className={index % 2 === 0 ? 'bg-blue-100/20' : 'bg-white'}>
                                             <td>
@@ -676,12 +389,9 @@ export default function MyComponent() {
                                                 <div className="col-span-1 start-col-5 justify-items-end">
                                                 <select id="roles" onChange={(e) => handleRoleToAddChange(member.userId, e.target.value)}  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                                                     <option selected disabled>Add role</option>
-                                                    {loading ? (
-                                                    <option>Loading...</option>
-                                                    ) : (
-                                                    roles.map((role) => (
+                                                    {roles.map((role) => (
                                                         <option key={role.id} value={role.id}>{role.name}</option>
-                                                    ))
+                                                    )
                                                     )}
                                                 </select>
                                                 </div>
