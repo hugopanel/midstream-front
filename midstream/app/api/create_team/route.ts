@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
     try {
-        const { ProjectId, memberstoadd} = await request.json();
+        const { Name, memberstoadd} = await request.json();
 
         const response = await fetch('http://localhost:5101/Team/CreateTeam', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ ProjectId, memberstoadd}),
+            body: JSON.stringify({ Name, memberstoadd}),
         });
 
         if (!response.ok) {

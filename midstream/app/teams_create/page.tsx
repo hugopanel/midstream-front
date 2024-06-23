@@ -156,7 +156,7 @@ export default function MyComponent() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ ProjectId : selectedProjectId, memberstoadd}),
+                body: JSON.stringify({ Name : teamName, memberstoadd}),
             });
 
             if (!response.ok) {
@@ -179,7 +179,6 @@ export default function MyComponent() {
       }, []);
 
     const handleTeamNameChange = (e: ChangeEvent<HTMLInputElement>) => setTeamName(e.target.value);
-    const handleSelectedProjectChange = (e: ChangeEvent<HTMLInputElement>) => setSelectedProjectId(e.target.value);
 
     const handleRoleToAddChange = (userId, roleId) => {
         const selectedRole = roles.find((role) => role.id === roleId);
@@ -251,7 +250,7 @@ export default function MyComponent() {
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-inherit">
                                     <path d="M18.75 12.75h1.5a.75.75 0 0 0 0-1.5h-1.5a.75.75 0 0 0 0 1.5ZM12 6a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 12 6ZM12 18a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 12 18ZM3.75 6.75h1.5a.75.75 0 1 0 0-1.5h-1.5a.75.75 0 0 0 0 1.5ZM5.25 18.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.75.75 0 0 1 0 1.5ZM3 12a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 3 12ZM9 3.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5ZM12.75 12a2.25 2.25 0 1 1 4.5 0 2.25 2.25 0 0 1-4.5 0ZM9 15.75a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
                                 </svg>
-                                <h6 className="block antialiased tracking-normal font-sans text-2xl font-semibold leading-snug text-white ml-3">Edit Team</h6></div>
+                                <h6 className="block antialiased tracking-normal font-sans text-2xl font-semibold leading-snug text-white ml-3">Create Team</h6></div>
                         </div>
                         <div className="flex items-center">
                             <button className="relative middle none font-sans font-medium text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none w-10 max-w-[40px] h-10 max-h-[40px] rounded-lg text-xs text-gray-700 hover:bg-blue-gray-500/10 active:bg-blue-gray-500/30 grid xl:hidden" type="button">
@@ -296,14 +295,7 @@ export default function MyComponent() {
                         <div className="relative flex flex-col bg-clip-border rounded-xl bg-white text-gray-700 shadow-md overflow-hidden xl:col-span-3">
                             <div className="relative bg-clip-border rounded-xl overflow-hidden bg-transparent text-gray-700 shadow-none m-0 flex flex-wrap items-center justify-between p-6">
                                 <div>
-                                    <label htmlFor="underline_select" className="sr-only">Underline select</label>
-                                    <select id="underline_select" className="block font-semibold uppercase text-center ml-[17px] py-2.5 px-0 w-full text-m text-gray-700 bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200 peer" value={selectedProjectId || ''} onChange={handleSelectedProjectChange}>
-                                        <option selected disabled>Choose a team</option>
-                                        {projects.map((project) => (
-                                            <option key={project.id} value={project.id}>{project.name}</option>
-                                        )
-                                        )}
-                                    </select>
+                                    <input type="text" name="teamName" id="teamName" placeholder="project name" value={ teamName } onChange={handleTeamNameChange} className="block font-semibold uppercase text-center ml-[17px] py-2.5 px-0 w-full text-m text-gray-700 bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200 peer" />
                                 </div>
                                 <div className="pt-2 relative mx-auto text-gray-600">
                                     <input className="border-2 border-gray-300 bg-white h-10 px-5 pr-16 rounded-lg text-sm focus:outline-none"
