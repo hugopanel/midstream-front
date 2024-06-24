@@ -50,7 +50,7 @@ export default function Marketplace() {
     const handleCreateClick = () => {
         // Logic to handle edit action
         // For demonstration, let's navigate to `/teams_edit?teamId=<teamId>`
-        router.push('/teams_edit?teamId=' + null);
+        router.push('/teams_create');
     };
 
     const hexToRgb = (hex: string): string => {
@@ -62,7 +62,6 @@ export default function Marketplace() {
         const green = parseInt(cleanedHex.substring(2, 4), 16);
         const blue = parseInt(cleanedHex.substring(4, 6), 16);
 
-        console.log(`rgba(${red}, ${green}, ${blue},1)`);
         // Return the RGB value as a string
         return `rgba(${red}, ${green}, ${blue},1)`;
     };
@@ -72,12 +71,9 @@ export default function Marketplace() {
     const getMembers = async () => {
         // setLoadingEmail('Loading...');
         // setErrorEmail('');
-
-        console.log(SelectedTeamId);
         const teamId = SelectedTeamId;
 
         try {
-            console.log(teamId);
             const response = await fetch('/api/get_members_by_team', {
                 method: 'POST',
                 headers: {
@@ -92,11 +88,7 @@ export default function Marketplace() {
             }
 
             const data = await response.json();
-            console.log(data);
             setMembers(data.members);
-            for (let i = 0; i < data.members.length; i++) {
-                console.log(data.members[i].colour);
-            }
             // localStorage.setItem('token', data.token);
             // setSuccessEmail('Email updated.');
         } catch (error: any) {
@@ -119,11 +111,8 @@ export default function Marketplace() {
             });
             const data = await response.json();
             setTeams(data.teams);
-            console.log(data.teams);
-            console.log(data.teams[0]);
             if (data.teams.length > 0) {
                 setSelectedTeamId(data.teams[0].id);
-                console.log(data.teams[0].id);
             }
         } catch (error) {
             console.error('Error fetching teams :', error);
@@ -150,11 +139,9 @@ export default function Marketplace() {
     
     useEffect(() => {
         fetchTeams();
-        console.log("here");
     }, []);
 
     useEffect(() => {
-        console.log(SelectedTeamId);
         getMembers();
     }, [SelectedTeamId]);
     
