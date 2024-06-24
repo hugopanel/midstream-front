@@ -67,7 +67,7 @@ const Projects: React.FC = () => {
 									<div className="gap-4 w-10/12">
 										<p className="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-bold">{project.name}</p>
 										<div className="flex flex-start bg-blue-gray-50 overflow-hidden w-full rounded-sm font-sans text-xs font-medium h-1 mt-1">
-											<div className={`flex justify-center items-center h-full bg-gradient-to-tr ${project.progress < 100 ? ' from-pink-600 to-pink-200' : 'from-green-600 to-green-200'} text-white`} style={{ width: `${project.progress}%` }}></div>
+											<div className={`flex justify-center items-center h-full bg-gradient-to-tr ${project.progress < 100 ? 'from-pink-600 to-pink-200' : 'from-green-600 to-green-200'} text-white`} style={{ width: `${project.progress}%` }}></div>
 										</div>
 									</div>
 								</td>

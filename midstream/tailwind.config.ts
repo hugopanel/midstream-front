@@ -24,6 +24,8 @@ const config: Config = {
     'bg-yellow-50', 'text-yellow-600', 'ring-yellow-500/10',
     'bg-orange-50', 'text-orange-600', 'ring-orange-500/10',
     // Ajoutez toutes les autres classes dynamiques nécessaires ici
+    // Projects
+    'from-pink-600 to-pink-200', 'from-green-600 to-green-200'
   ],
   plugins: [],
 };

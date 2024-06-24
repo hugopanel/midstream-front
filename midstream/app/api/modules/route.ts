@@ -9,6 +9,7 @@ export async function GET(request: NextRequest){
                 'Content-Type': 'application/json',
                 'Cache-Control': 'no-cache'
             },
+            cache: 'no-store'
         });
 
         if (!response.ok) {
