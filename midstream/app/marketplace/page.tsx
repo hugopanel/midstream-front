@@ -62,9 +62,9 @@ export default function Marketplace() {
 
 
 	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value);
-	const handleSubmitSearch = (e: React.FormEvent) => {e.preventDefault(); setSubmitSearch(search);};
+	const handleSearchSubmit = (e: React.FormEvent) => {e.preventDefault(); setSubmitSearch(search);};
 	const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => setPrompt(e.target.value);
-	const handleSubmitPrompt = (e: React.FormEvent) => {e.preventDefault(); sendPrompt();};
+	const handlePromptSubmit = (e: React.FormEvent) => {e.preventDefault(); sendPrompt();};
 	const handleCheck = (id: number) => {
 		setModules(modules.map((module) => {
 			if (module.id === id) module.checked = !module.checked;
@@ -78,7 +78,7 @@ export default function Marketplace() {
 		<div className="min-h-screen bg-gradient-to-r from-indigo-500 from-5% via-blue-300 via-30% to-cyan-50 to-95%">
 			<SideBare page={page} />
 			<div className="p-4 xl:ml-80">
-				<NavBare title={page} icon={PageIcon} searchBar={<SearchBare handleSearchChange={handleSearchChange} handleSearchSubmit={handleSubmitSearch} searchValue={search} color="white"/>} />
+				<NavBare title={page} icon={PageIcon} searchBar={<SearchBare handleSearchChange={handleSearchChange} handleSearchSubmit={handleSearchSubmit} searchValue={search} color="white"/>} />
 				<div className="mt-14">
 					<div className="mb-14 grid gap-y-10 gap-x-6 md:grid-cols-1 xl:grid-cols-1">
 						<div className="relative flex flex-col bg-clip-border rounded-xl bg-gradient-to-tr from-w to-pink-400 text-gray-700 shadow-md col-2">
@@ -105,7 +105,7 @@ export default function Marketplace() {
 									</svg>
 								</div>
 								<div className="p-28 pt-3 pb-10 flex flex-col gap-1 w-full max-w-[1040px]">
-									<form onSubmit={handleSubmitPrompt} >
+									<form onSubmit={handlePromptSubmit} >
 										<div className="flex justify-between leading-1.5 mt-5 p-4 border-gray-200 border-gray-200 bg-gradient-to-tr from-blue-50 from-25% via-sky-50 via-50% to-gray-50/10 to-90% rounded-tl-2xl rounded-br-2xl rounded-es-2xl shadow-blue-100/70 shadow-lg">
 											<textarea id="message" className="block p-2.5 w-full text-sm text-gray-900 bg-transparent rounded-lg border-transparent focus:border-transparent focus:ring-0 !outline-none resize-none hover:resize" placeholder="Describe your project in 2 sentences..." onChange={handlePromptChange}></textarea>
 											<button type="submit" className="flex flex-row-reverse items-center space-x-2 rtl:space-x-reverse mt-3"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6 text-blue-300" >

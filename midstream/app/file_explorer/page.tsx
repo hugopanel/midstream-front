@@ -65,9 +65,9 @@ export default function FileExplorer() {
 		setFilesShown(filteredFiles.slice((selectedPage - 1) * maxFilesOnPage, selectedPage * maxFilesOnPage));
 	}, [selectedPage, files, submitSearch]);
 
-	const handleSearchSubmit = (e: React.ChangeEvent<HTMLInputElement>) => {setSubmitSearch(e.target.value);setSelectedPage(1);};
 	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value);
-	return (
+	const handleSearchSubmit = (e: React.FormEvent) => {e.preventDefault(); setSubmitSearch(search);};
+		return (
 		<div className="min-h-screen bg-gradient-to-r from-indigo-500 from-5% via-blue-300 via-30% to-cyan-50 to-95%">
 			<SideBare page={page} />
 			<div className="p-4 xl:ml-80">
