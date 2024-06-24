@@ -183,7 +183,7 @@ const App: React.FC = () => {
                 </svg>
 
 
-                <Link href="./doc-explorer">
+                <Link href="./doc_explorer">
                   <p className="block antialiased font-sans text-base leading-relaxed text-inherit font-medium capitalize">Documents</p></Link>
               </button>
             </li>
