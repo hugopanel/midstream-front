@@ -8,6 +8,7 @@ import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { Fragment } from 'react'
 import Image from "next/image";
 import Link from 'next/link';
+import { List } from 'postcss/lib/list';
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import logo from '../assets/logo2.png';
 
@@ -45,11 +46,39 @@ const filters = [
     ],
   },
 ]
+
 const activeFilters = [{ value: 'objects', label: 'Objects' }]
+
+interface Option{
+  value:string;
+  label:string;
+  checked: boolean;
+}
+
+interface Filter {
+  id: string;
+  name: string;
+  options: Option[];
+}
 
 interface Project {
   id: string;
   name: string;
+}
+
+interface Task {
+  id: string;
+  beginningDate: string;
+  endDate: string;
+  priority: string;
+  status: string;
+  typeOfTask: string;
+  title: string;
+  description: string;
+  belong: string;
+  author: string;
+  assignedTo: string;
+  relatedTo: string[];
 }
 
 function classNames(...classes: string[]) {
@@ -62,9 +91,17 @@ const App: React.FC = () => {
   const dp1Ref = useRef<HTMLDivElement>(null);
   const dp2Ref = useRef<HTMLDivElement>(null);
   const dp3Ref = useRef<HTMLDivElement>(null);
+
+  const [FiltersDb, setFiltersDb] = useState<Filter[]>([]);
     
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);  
   const [projects, setProjects] = useState<Project[]>([]); 
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasksToDo, setTasksToDo] = useState<Task[]>([]);
+  const [tasksInProgress, setTasksInProgress] = useState<Task[]>([]);
+  const [tasksDone, setTasksDone] = useState<Task[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
+  const [priorities, setPriorities] = useState<string[]>([]);
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, element: HTMLElement) => {
     setDragTemp(element);
@@ -75,17 +112,53 @@ const App: React.FC = () => {
     e.preventDefault();
   };
 
+  // const handleDrop = (e: React.DragEvent<HTMLDivElement>, dropRef: React.RefObject<HTMLDivElement>) => {
+  //   e.preventDefault();
+  //   e.stopPropagation();
+
+  //   if (dragTemp && dropRef.current) {
+  //     const rect = dropRef.current.getBoundingClientRect();
+  //     const offsetY = e.clientY - rect.top;
+
+  //     const childrenArray = Array.from(dropRef.current.children) as HTMLElement[];
+  //     let inserted = false;
+
+  //     for (let child of childrenArray) {
+  //       const childRect = child.getBoundingClientRect();
+  //       if (offsetY < childRect.top + childRect.height / 2) {
+  //         dropRef.current.insertBefore(dragTemp, child);
+  //         inserted = true;
+  //         break;
+  //       }
+  //     }
+
+  //     if (!inserted) {
+  //       dropRef.current.appendChild(dragTemp);
+  //     }
+
+  //     // Logging content of dp2 and dp3 after drop
+  //     // if (dropRef.current === dp2Ref.current || dropRef.current === dp3Ref.current) {
+  //     //   dropRef.current.querySelectorAll('.drag').forEach((element) => {
+  //     //     console.log(dropRef.current.id);
+  //     //     console.log((element as HTMLElement).id);
+  //     //   });
+  //     // }
+  //   }
+  //   setDragTemp(null); // Reset dragTemp after drop
+  // };
+
   const handleDrop = (e: React.DragEvent<HTMLDivElement>, dropRef: React.RefObject<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-
+  
     if (dragTemp && dropRef.current) {
       const rect = dropRef.current.getBoundingClientRect();
       const offsetY = e.clientY - rect.top;
-
+  
       const childrenArray = Array.from(dropRef.current.children) as HTMLElement[];
       let inserted = false;
-
+  
+      // Insert the dragged element at the correct position
       for (let child of childrenArray) {
         const childRect = child.getBoundingClientRect();
         if (offsetY < childRect.top + childRect.height / 2) {
@@ -94,21 +167,168 @@ const App: React.FC = () => {
           break;
         }
       }
-
+  
+      // Append the dragged element if not inserted
       if (!inserted) {
         dropRef.current.appendChild(dragTemp);
       }
+  
+      console.log(dragTemp.id);
+      console.log("tasks:", tasks);
+      console.log("tasksId:", tasks.map((task) => task.id));
+  
+      const task = tasks.find((task) => task.id === dragTemp.id);
+      console.log(task);
+      if (task) {
+        task.status = dropRef.current.id;
+      }
+      console.log(task);
 
-      // Logging content of dp2 and dp3 after drop
+      const updatedTasks = tasks.map((task) =>
+        task.id === dragTemp.id ? { ...task, status: dropRef.current.id } : task
+      );
+
+      setTasks(updatedTasks);
+      console.log("setTasks", tasks);
+      
+  
+      // Additional logging to verify content after drop
       if (dropRef.current === dp2Ref.current || dropRef.current === dp3Ref.current) {
         dropRef.current.querySelectorAll('.drag').forEach((element) => {
-          console.log((element as HTMLElement).innerText);
+          console.log(dropRef.current.id);
+          console.log((element as HTMLElement).id);
         });
       }
+    } else {
+      console.warn('dragTemp or dropRef.current is null');
     }
-
-    setDragTemp(null); // Reset dragTemp after drop
   };
+
+  const formatDateTime = (dateTimeString: string): string => {
+    const date = new Date(dateTimeString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const year = date.getFullYear();
+  
+    return `${day}/${month}/${year}`;
+  };
+
+  const convertToISOFormat = (formattedDateString: string): string => {
+    // Split the input date string into day, month, and year
+    const [day, month, year] = formattedDateString.split('/').map(Number);
+    
+    // Create a Date object with the extracted values
+    const date = new Date(Date.UTC(year, month - 1, day)); // Months are 0-based in JavaScript
+  
+    // Format the date to ISO string and return it
+    return date.toISOString();
+  };
+
+  const getTasks = async () => {
+    // setLoadingEmail('Loading...');
+    // setErrorEmail('');
+    const projectId = selectedProjectId;
+
+    try {
+        const response = await fetch('/api/tasks_to_display', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ projectId }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to get the members of the team');
+        }
+
+        const data = await response.json();
+        console.log(data);
+        for (let task of data.tasks) {
+          task.beginningDate = formatDateTime(task.beginningDate);
+          task.endDate = formatDateTime(task.endDate);
+        }
+        var tasksToDo: Task[] = [];
+        var tasksInProgress: Task[] = [];
+        var tasksDone: Task[] = [];
+        for (let task of data.tasks) {
+          if(task.status === 'To do') {
+            tasksToDo.push(task);
+          }
+          else if(task.status === 'In progress') {
+            tasksInProgress.push(task);
+          }
+          else {
+            tasksDone.push(task);
+          }
+        }
+        setTasks(data.tasks);
+        setTasksToDo(tasksToDo);
+        setTasksInProgress(tasksInProgress);
+        setTasksDone(tasksDone);
+        console.log("setTasks", tasks);
+        setTags(data.types);
+        var filterstoadd = [];
+        var optiontagsfilter = [];
+        for(let type in data.types){
+          var option = { value : data.types[type], label : data.types[type], checked : false};
+          optiontagsfilter.push(option);
+        }
+        filterstoadd.push({id:'category', name:'Tags', options : optiontagsfilter});
+        setPriorities(data.priorities);
+        var optionprioritiesfilter = [];
+        for(let priority in data.priorities){
+          var option = { value : data.priorities[priority], label : data.priorities[priority], checked : false};
+          optionprioritiesfilter.push(option);
+        }
+        filterstoadd.push({id:'color', name:'Urgency', options: optionprioritiesfilter})
+        filterstoadd.push({
+          id: 'sizes',
+          name: 'Due Date',
+          options: [
+            { value: 'today', label: 'Today', checked: false },
+            { value: 'week', label: 'This week', checked: false },
+            { value: 'month', label: 'This month', checked: false },
+          ],
+        })
+        setFiltersDb(filterstoadd);
+        console.log(data.priorities);
+        for(let priority in data.priorities){
+          console.log(data.priorities[priority]);
+        }
+        console.log("filterstoadd", filterstoadd);
+    } catch (error: any) {
+        // setErrorEmail(error.message);
+        console.error('Error logging in:', error);
+    } finally {
+        // setLoadingEmail('');
+    }
+};
+
+  // const updateTasksLists = () => {
+  //   var newTasksToDo: Task[] = [];
+  //   var newTasksInProgress: Task[] = [];
+  //   var newTasksDone: Task[] = [];
+  //   for (let task of tasks) {
+  //     if(task.status === 'To do') {
+  //       newTasksToDo.push(task);
+  //     }
+  //     else if(task.status === 'In progress') {
+  //       newTasksInProgress.push(task);
+  //     }
+  //     else {
+  //       newTasksDone.push(task);
+  //     }
+  //   }
+  //   setTasksToDo(newTasksToDo);
+  //   setTasksInProgress(newTasksInProgress);
+  //   setTasksDone(newTasksDone);
+
+  //   console.log(tasksToDo);
+  //   console.log(tasksInProgress);
+  //   console.log(tasksDone);
+  // }
 
   const fetchProjects = async () => {
     try {
@@ -122,11 +342,50 @@ const App: React.FC = () => {
     } finally {
       //setIsLoading(false);
     }
+  };
+  
+  const saveTasks = async () => {
+    var tasksToSave = tasks;
+    for(let task in tasksToSave){
+      tasksToSave[task].beginningDate = convertToISOFormat(tasksToSave[task].beginningDate);
+      tasksToSave[task].endDate = convertToISOFormat(tasksToSave[task].endDate);
+    }
+    console.log("saveTasks", tasksToSave);
+    console.log(tasksToSave);
+    try {
+        const response = await fetch('/api/save_tasks', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ tasks: tasksToSave }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to save the tasks');
+        }
+
+        const data = await response.json();
+    } catch (error: any) {
+        console.error('Error saving tasks:', error);
+    }
 };
+      
 
   useEffect(() => {    
     fetchProjects();
+    window.addEventListener('beforeunload', saveTasks);
   }, []);
+
+  useEffect(() => {
+    if(tasks.length > 0) {
+      saveTasks();
+    }
+    getTasks();
+}, [selectedProjectId]);
+
+
 
   const handleSelectedProjectChange = (e: ChangeEvent<HTMLInputElement>) => setSelectedProjectId(e.target.value);
 
@@ -339,7 +598,7 @@ const App: React.FC = () => {
 
                       {/* Filters */}
                       <form className="mt-4">
-                        {filters.map((section) => (
+                        {FiltersDb.map((section) => (
                           <Disclosure as="div" key={section.name} className="border-t border-gray-200 px-4 py-6">
                             {({ open }) => (
                               <>
@@ -439,15 +698,15 @@ const App: React.FC = () => {
                   <div className="hidden sm:block">
                     <div className="flow-root">
                       <Popover.Group className="-mx-4 flex items-center divide-x divide-gray-200 focus:outline-none">
-                        {filters.map((section, sectionIdx) => (
-                          <Popover key={section.name} className="relative inline-block px-4 text-left focus:outline-none">
+                        {FiltersDb.map((section, sectionIdx) => (
+                          <Popover key={section.name} className="relative inline-block px-4 text-left  capitalize focus:outline-none">
                             <Popover.Button className="group inline-flex justify-center text-base font-medium text-white hover:text-blue-500/50 focus:outline-none">
                               <span>{section.name}</span>
-                              {sectionIdx === 0 ? (
+                              {/* {sectionIdx === 0 ? (
                                 <span className="ml-1.5 rounded bg-white border border-white px-1.5 py-0.5 text-xs font-semibold tabular-nums text-blue-300 focus:outline-none">
                                   1
                                 </span>
-                              ) : null}
+                              ) : null} */}
                               <ChevronDownIcon
                                 className="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-white group-hover:text-gray-500 focus:outline-none"
                                 aria-hidden="true"
@@ -540,76 +799,43 @@ const App: React.FC = () => {
           >
             <h2 className="text-xl font-bold mb-2 ml-3">To Do</h2>
             <div
+              id="To do"
               className="drop flex-1 space-y-2 min-h-[460px]"
               ref={dp1Ref}
               onDragOver={(e) => handleDragOver(e, dp1Ref)}
               onDrop={(e) => handleDrop(e, dp1Ref)}>
-              <div
-                id="dg1"
-                className="drag w-full bg-blue-100 p-2 rounded-xl shadow-md text-white"
-                draggable
-                onDragStart={(e) => handleDragStart(e, e.currentTarget as HTMLElement)}
-              >
-                <div className="relative flex flex-col bg-clip-border rounded-xl bg-white/80 text-gray-700 shadow-md">
-                  <div className="bg-clip-border mx-4 rounded-3xl overflow-hidden bg-gradient-to-tr from-green-600 to-green-400 text-white shadow-green-500/40 shadow-lg absolute mt-2 grid h-13 w-13 place-items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-5 h-5 m-2 text-white">
-                      <path d="M6.25 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM3.25 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM19.75 7.5a.75.75 0 00-1.5 0v2.25H16a.75.75 0 000 1.5h2.25v2.25a.75.75 0 001.5 0v-2.25H22a.75.75 0 000-1.5h-2.25V7.5z"></path>
-                    </svg>
-                  </div>
-                  <div className="p-4 text-right">
-                    <p className="block antialiased font-sans text-sm leading-normal font-normal text-blue-gray-600">16/10/24</p>
-                    <h4 className="block antialiased tracking-normal font-sans text-2xl font-semibold leading-snug text-blue-gray-900">Create Database</h4>
-                  </div>
-                  <div className="border-t border-blue-gray-50 p-4 flex justify-end">
-                    <span className="inline-flex items-center rounded-md bg-green-50 px-4 py-2 text-sm font-medium text-green-600 ring-1 ring-inset ring-green-500/10 mr-[10px]">Data</span>
-                    <span className="inline-flex items-center rounded-md bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-600 ring-1 ring-inset ring-indigo-500/10 mr-[10px]"> Back </span>
-                    <Link href="/tasks_edit" className='flex'>
-                      <button>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-6 h-6 text-gray-500 ml-3">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
-                        </svg>
-                      </button>
-                    </Link>
-                  </div>
-                </div>
-
-              </div>
-              <div
-                id="dg2"
-                className="drag w-full bg-blue-200 p-2 rounded-xl shadow-md text-white"
-                draggable
-                onDragStart={(e) => handleDragStart(e, e.currentTarget as HTMLElement)}
-              >
-                <div className="relative flex flex-col bg-clip-border rounded-xl bg-white/80 text-gray-700 shadow-md">
-                  <div className="bg-clip-border mx-4 rounded-3xl overflow-hidden bg-gradient-to-tr from-pink-600 to-pink-400 text-white shadow-pink-500/40 shadow-lg absolute mt-2 grid h-13 w-13 place-items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-5 h-5 m-2 text-white">
-                      <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd"></path>
-                    </svg>
-                  </div>
-                  <div className="p-4 text-right">
-                    <p className="block antialiased font-sans text-sm leading-normal font-normal text-blue-gray-600">21/10/24</p>
-                    <h4 className="block antialiased tracking-normal font-sans text-2xl font-semibold leading-snug text-blue-gray-900">Fix Menu</h4>
-                  </div>
-                  <div className="border-t border-blue-gray-50 p-4 flex justify-end">
-                    <span className="inline-flex items-center rounded-md bg-pink-50 px-4 py-2 text-sm font-medium text-pink-600 ring-1 ring-inset ring-pink-500/10 mr-[10px]"> Front </span>
-                    <Link href="/tasks_edit" className='flex'>
-                      <button>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-6 h-6 text-gray-500 ml-3">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
-                        </svg>
-                      </button>
-                    </Link>
+              {tasksToDo.map((task, index) => (
+                <div
+                  key={task.id}
+                  id={`${task.id}`}
+                  className={`drag w-full ${task.priority === 'high' ? 'bg-blue-100' : 'bg-blue-200'} p-2 rounded-xl shadow-md text-white`}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, e.currentTarget as HTMLElement)}
+                >
+                  <div className="relative flex flex-col bg-clip-border rounded-xl bg-white/80 text-gray-700 shadow-md">
+                    <div className={`bg-clip-border mx-4 rounded-3xl overflow-hidden ${task.priority === 'high' ? 'bg-gradient-to-tr from-green-600 to-green-400' : 'bg-gradient-to-tr from-pink-600 to-pink-400'} text-white shadow-lg absolute mt-2 grid h-13 w-13 place-items-center`}>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-5 h-5 m-2 text-white">
+                        <path d="M6.25 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM3.25 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM19.75 7.5a.75.75 0 00-1.5 0v2.25H16a.75.75 0 000 1.5h2.25v2.25a.75.75 0 001.5 0v-2.25H22a.75.75 0 000-1.5h-2.25V7.5z"></path>
+                      </svg>
+                    </div>
+                    <div className="p-4 text-right">
+                      <p className="block antialiased font-sans text-sm leading-normal font-normal text-blue-gray-600">{task.endDate}</p>
+                      <h4 className="block antialiased tracking-normal font-sans text-2xl font-semibold capitalize leading-snug text-blue-gray-900">{task.title}</h4>
+                    </div>
+                    <div className="border-t border-blue-gray-50 p-4 flex justify-end">
+                      <span className="inline-flex items-center capitalize rounded-md bg-green-50 px-4 py-2 text-sm font-medium text-green-600 ring-1 ring-inset ring-green-500/10 mr-[10px]">{task.typeOfTask}</span>
+                      <Link href="/tasks_edit" className='flex'>
+                        <button>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-6 h-6 text-gray-500 ml-3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                          </svg>
+                        </button>
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div
-                id="dg3"
-                className="drag w-full bg-blue-300 p-5 rounded-md shadow-md text-white"
-                draggable
-                onDragStart={(e) => handleDragStart(e, e.currentTarget as HTMLElement)}
-              >
-                Item3
-              </div>
+              ))}
+              
             </div>
             <button className="text-lg font-semibold mb-2 pt-2 mt-2 flex items-center bottom-0"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="h-5 w-5 text-white font-semibold">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -624,26 +850,42 @@ const App: React.FC = () => {
           >
             <h2 className="text-xl font-bold mb-2 ml-3">In Progress</h2>
             <div
+              id="In progress"
               className="drop flex-1 p-3 space-y-2 min-h-[460px]"
               ref={dp2Ref}
               onDragOver={(e) => handleDragOver(e, dp2Ref)}
               onDrop={(e) => handleDrop(e, dp2Ref)}>
-              <div
-                id="dg4"
-                className="drag w-full bg-blue-400 p-5 rounded-md shadow-md text-white"
-                draggable
-                onDragStart={(e) => handleDragStart(e, e.currentTarget as HTMLElement)}
-              >
-                Item4
-              </div>
-              <div
-                id="dg5"
-                className="drag w-full bg-blue-500 p-5 rounded-md shadow-md text-white"
-                draggable
-                onDragStart={(e) => handleDragStart(e, e.currentTarget as HTMLElement)}
-              >
-                Item5
-              </div>
+              {tasksInProgress.map((task, index) => (
+                <div
+                  key={task.id}
+                  id={`${task.id}`}
+                  className={`drag w-full ${task.priority === 'high' ? 'bg-blue-100' : 'bg-blue-200'} p-2 rounded-xl shadow-md text-white`}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, e.currentTarget as HTMLElement)}
+                >
+                  <div className="relative flex flex-col bg-clip-border rounded-xl bg-white/80 text-gray-700 shadow-md">
+                    <div className={`bg-clip-border mx-4 rounded-3xl overflow-hidden ${task.priority === 'high' ? 'bg-gradient-to-tr from-green-600 to-green-400' : 'bg-gradient-to-tr from-pink-600 to-pink-400'} text-white shadow-lg absolute mt-2 grid h-13 w-13 place-items-center`}>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-5 h-5 m-2 text-white">
+                        <path d="M6.25 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM3.25 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM19.75 7.5a.75.75 0 00-1.5 0v2.25H16a.75.75 0 000 1.5h2.25v2.25a.75.75 0 001.5 0v-2.25H22a.75.75 0 000-1.5h-2.25V7.5z"></path>
+                      </svg>
+                    </div>
+                    <div className="p-4 text-right">
+                      <p className="block antialiased font-sans text-sm leading-normal font-normal text-blue-gray-600">{task.endDate}</p>
+                      <h4 className="block antialiased tracking-normal font-sans text-2xl font-semibold capitalize leading-snug text-blue-gray-900">{task.title}</h4>
+                    </div>
+                    <div className="border-t border-blue-gray-50 p-4 flex justify-end">
+                      <span className="inline-flex items-center capitalize rounded-md bg-green-50 px-4 py-2 text-sm font-medium text-green-600 ring-1 ring-inset ring-green-500/10 mr-[10px]">{task.typeOfTask}</span>
+                      <Link href="/tasks_edit" className='flex'>
+                        <button>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-6 h-6 text-gray-500 ml-3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                          </svg>
+                        </button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
             <button className="text-lg font-semibold mb-2 pt-2 mt-2 flex items-center bottom-0"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="h-5 w-5 text-white font-semibold">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -658,10 +900,44 @@ const App: React.FC = () => {
           >
             <h2 className="text-xl font-bold mb-2 ml-3">Done</h2>
             <div
+              id="Done"
               className="drop flex-1 p-3 space-y-2 min-h-[460px]"
               ref={dp3Ref}
               onDragOver={(e) => handleDragOver(e, dp3Ref)}
-              onDrop={(e) => handleDrop(e, dp3Ref)}></div>
+              onDrop={(e) => handleDrop(e, dp3Ref)}>
+                {tasksDone.map((task, index) => (
+                <div
+                  key={task.id}
+                  id={`${task.id}`}
+                  className={`drag w-full ${task.priority === 'high' ? 'bg-blue-100' : 'bg-blue-200'} p-2 rounded-xl shadow-md text-white`}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, e.currentTarget as HTMLElement)}
+                >
+                  <div className="relative flex flex-col bg-clip-border rounded-xl bg-white/80 text-gray-700 shadow-md">
+                    <div className={`bg-clip-border mx-4 rounded-3xl overflow-hidden ${task.priority === 'high' ? 'bg-gradient-to-tr from-green-600 to-green-400' : 'bg-gradient-to-tr from-pink-600 to-pink-400'} text-white shadow-lg absolute mt-2 grid h-13 w-13 place-items-center`}>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-5 h-5 m-2 text-white">
+                        <path d="M6.25 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM3.25 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM19.75 7.5a.75.75 0 00-1.5 0v2.25H16a.75.75 0 000 1.5h2.25v2.25a.75.75 0 001.5 0v-2.25H22a.75.75 0 000-1.5h-2.25V7.5z"></path>
+                      </svg>
+                    </div>
+                    <div className="p-4 text-right">
+                      <p className="block antialiased font-sans text-sm leading-normal font-normal text-blue-gray-600">{task.endDate}</p>
+                      <h4 className="block antialiased tracking-normal font-sans text-2xl font-semibold capitalize leading-snug text-blue-gray-900">{task.title}</h4>
+                    </div>
+                    <div className="border-t border-blue-gray-50 p-4 flex justify-end">
+                      <span className="inline-flex items-center capitalize rounded-md bg-green-50 px-4 py-2 text-sm font-medium text-green-600 ring-1 ring-inset ring-green-500/10 mr-[10px]">{task.typeOfTask}</span>
+                      <Link href="/tasks_edit" className='flex'>
+                        <button>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-6 h-6 text-gray-500 ml-3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                          </svg>
+                        </button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
+                
+            </div>
             <button className="text-lg font-semibold mb-2 pt-2 mt-2 flex items-center bottom-0"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="h-5 w-5 text-white font-semibold">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
