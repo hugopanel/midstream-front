@@ -1,12 +1,14 @@
 
 "use client";
-import { Fragment } from 'react'
+
 import { Dialog, Disclosure, Menu, Popover, Transition } from '@headlessui/react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
+
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
-import React, { useState, useRef } from 'react';
+import { Fragment } from 'react'
 import Image from "next/image";
 import Link from 'next/link';
+import { XMarkIcon } from '@heroicons/react/24/outline'
 import logo from '../assets/logo2.png';
 
 const sortOptions = [
@@ -45,6 +47,11 @@ const filters = [
 ]
 const activeFilters = [{ value: 'objects', label: 'Objects' }]
 
+interface Project {
+  id: string;
+  name: string;
+}
+
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
 }
@@ -55,6 +62,9 @@ const App: React.FC = () => {
   const dp1Ref = useRef<HTMLDivElement>(null);
   const dp2Ref = useRef<HTMLDivElement>(null);
   const dp3Ref = useRef<HTMLDivElement>(null);
+    
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);  
+  const [projects, setProjects] = useState<Project[]>([]); 
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, element: HTMLElement) => {
     setDragTemp(element);
@@ -99,6 +109,26 @@ const App: React.FC = () => {
 
     setDragTemp(null); // Reset dragTemp after drop
   };
+
+  const fetchProjects = async () => {
+    try {
+      const response = await fetch('/api/projects');
+      const data = await response.json();
+      //setProjects(data.projects);
+      setProjects(data.projects);
+      setSelectedProjectId(data.projects[0].id);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    } finally {
+      //setIsLoading(false);
+    }
+};
+
+  useEffect(() => {    
+    fetchProjects();
+  }, []);
+
+  const handleSelectedProjectChange = (e: ChangeEvent<HTMLInputElement>) => setSelectedProjectId(e.target.value);
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-indigo-500 from-5% via-blue-300 via-30% to-cyan-50 to-95%">
@@ -247,12 +277,12 @@ const App: React.FC = () => {
             </div> */}
             <div className="pt-2 relative">
               <label htmlFor="underline_select" className="sr-only">Underline select</label>
-              <select id="underline_select" className="block font-semibold uppercase text-center py-2.5 px-0 w-full text-m text-white bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200 peer">
-                <option className="text-gray-500" selected>Choose a project</option>
-                <option className="text-gray-500" value="1">Operating system</option>
-                <option className="text-gray-500" value="2">Machine Learning</option>
-                <option className="text-gray-500" value="3">From Rel to Blabla</option>
-                <option className="text-gray-500" value="4">Midstream</option>
+              <select id="underline_select" className="block font-semibold uppercase text-center py-2.5 px-0 w-full text-m bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200 peer" value={selectedProjectId || ''} onChange={handleSelectedProjectChange}>
+                <option selected disabled>Choose a project</option>
+                {projects.map((project) => (
+                  <option className="text-gray-500" key={project.id} value={project.id}>{project.name}</option>
+                )
+                )}
               </select>
             </div>
 
