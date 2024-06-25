@@ -69,6 +69,13 @@ const Whiteboard: React.FC = () => {
           console.log("Retrieved drawings: ", drawings);
           if (drawings != null) setDrawings(drawings);
         });
+        connect.on("RemoveDrawing", (drawing: Drawing) => {
+          connect.invoke("RetrieveDrawing", whiteboardId);
+        });
+        connect.on("ClearWhiteboard", () => {
+          setDrawings([]);
+          clearCanvas();
+        });
 
         // Join the group corresponding to the whiteboard ID
         console.log("Joining whiteboard...");
@@ -281,21 +288,23 @@ const Whiteboard: React.FC = () => {
   };
 
   const undo = () => {
-    if (drawings.length > 0) {
-      const lastDrawing = drawings.pop()!;
-      setDrawings([...drawings]);
-      setUndoneDrawings([...undoneDrawings, lastDrawing]);
-    }
-    redrawCanvas();
-    redrawCanvas();
+    // if (drawings.length > 0) {
+    //   const lastDrawing = drawings.pop()!;
+    //   setDrawings([...drawings]);
+    //   setUndoneDrawings([...undoneDrawings, lastDrawing]);
+    // }
+    // redrawCanvas();
+    // redrawCanvas();
+    connection?.invoke("UndoLastDrawing", whiteboardId);
   };
 
   const redo = () => {
-    if (undoneDrawings.length > 0) {
-      const lastUndoneDrawing = undoneDrawings.pop()!;
-      setDrawings([...drawings, lastUndoneDrawing]);
-      redrawCanvas();
-    }
+    // if (undoneDrawings.length > 0) {
+    //   const lastUndoneDrawing = undoneDrawings.pop()!;
+    //   setDrawings([...drawings, lastUndoneDrawing]);
+    //   redrawCanvas();
+    // }
+    connection?.invoke("RedoLastUndoneDrawing", whiteboardId);
   };
 
   return (
@@ -490,7 +499,9 @@ const Whiteboard: React.FC = () => {
           </button>
           <button
             className="p-2 bg-red-100 text-red-600 rounded-3xl"
-            onClick={clearCanvas}
+            onClick={() => {
+              connection?.invoke("ClearWhiteboard", whiteboardId);
+            }}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
