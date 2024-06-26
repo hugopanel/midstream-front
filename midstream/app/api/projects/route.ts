@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request: NextRequest){
     try {
-
-        const response = await fetch('http://localhost:5101/Team/GetProjects', {
+        const response = await fetch("http://localhost:5101/projects/getall", {
             method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache'
+            },
+            cache: 'no-store'
         });
 
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.message || 'Failed to get projects');
+            throw new Error(errorData.message || "Failed to get projects.");
         }
 
         const data = await response.json();

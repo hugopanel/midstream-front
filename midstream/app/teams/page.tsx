@@ -18,7 +18,7 @@ interface Member {
     id: string;
     username: string;
     email: string;
-    avatar: string;
+    avatar: number;
     colour: string;
     roles: string[];
 }
