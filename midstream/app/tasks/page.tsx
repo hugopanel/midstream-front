@@ -338,17 +338,25 @@ const App: React.FC = () => {
 
   const fetchProjects = async () => {
     try {
-      const response = await fetch('/api/projects');
-      const data = await response.json();
-      //setProjects(data.projects);
-      setProjects(data.projects);
-      setSelectedProjectId(data.projects[0].id);
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/projects', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ token }),
+        });
+        const data = await response.json();
+        setProjects(data.projects);
+        if (data.projects.length > 0) {
+            setSelectedProjectId(data.projects[0].id);
+        }
     } catch (error) {
-      console.error('Error fetching projects:', error);
-    } finally {
-      //setIsLoading(false);
+        console.error('Error fetching teams :', error);
     }
-  };
+};
+
+  
   
   const saveTasks = async () => {
     var tasksToSave = tasks;
@@ -379,7 +387,7 @@ const App: React.FC = () => {
 };
       
 
-  useEffect(() => {    
+  useEffect(() => { 
     fetchProjects();
     window.addEventListener('beforeunload', saveTasks);
     setUserName(localStorage.getItem("userName") || "User");

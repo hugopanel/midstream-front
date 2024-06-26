@@ -1,15 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET() {
+export async function POST(request: NextRequest) {
     try {
+        const { token } = await request.json();
 
-        const response = await fetch('http://localhost:5101/Team/GetProjects', {
+        const response = await fetch('http://localhost:5101/Team/GetProjectByUser', {
             method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
         });
 
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.message || 'Failed to get projects');
+            throw new Error(errorData.message || 'Failed to get teams');
         }
 
         const data = await response.json();
