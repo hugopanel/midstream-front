@@ -1,6 +1,10 @@
 import { use, useEffect, useState } from "react";
 
-const Tasks: React.FC = () => {
+type TasksProps = {
+  projectId: string;
+}
+
+const Tasks: React.FC<TasksProps> = (projectId) => {
   const [tasks, setTasks] = useState<Task[]>([]);
 
   // Liste des tags et leurs couleurs associées 
@@ -9,54 +13,29 @@ const Tasks: React.FC = () => {
     { id: 1, name: "Back", color: tagColor.indigo },
     { id: 2, name: "Data", color: tagColor.green },
   ];
+
+
+  const fetchTasks = async () => {
+    try {
+      const userId = localStorage.getItem('userId');;
+      const response = await fetch('/api/tasks_assigned', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ projectId, userId }),
+      });
+      const data = await response.json();
+      setTasks(data.tasks);
+    } catch (error) {
+      console.error('Error during fetching tasks:', error);
+    }
+  }
+
   useEffect(() => {
-    setTasks([
-      {
-        id: 1,
-        title: "Link Login",
-        description: "Link the login page to the homepage",
-        type: taskType["Task"],
-        beginning_date: "2021-10-01",
-        end_date: "2021-10-02",
-        priority: 1,
-        status: taskStatus["Ready"],
-        tags: [tags[0], tags[1]]
-      },
-      {
-        id: 2,
-        title: "Plan front meeting",
-        description: "Plan a meeting to discuss the front end",
-        type: taskType["Improvement"],
-        beginning_date: "2021-10-01",
-        end_date: "2021-10-02",
-        priority: 2,
-        status: taskStatus["InProgress"],
-        tags: [tags[0], tags[1], tags[2]]
-      },
-      {
-        id: 3,
-        title: "Create Database",
-        description: "Create the database for the project",
-        type: taskType["Feature"],
-        beginning_date: "2021-10-01",
-        end_date: "2021-10-02",
-        priority: 3,
-        status: taskStatus["Ready"],
-        tags: [tags[2], tags[1]]
-      },
-      {
-        id: 4,
-        title: "Fix Menu",
-        description: "Fix the menu on the homepage",
-        type: taskType["Bug"],
-        beginning_date: "2021-10-01",
-        end_date: "2021-10-02",
-        priority: 4,
-        status: taskStatus["InProgress"],
-        tags: [tags[0]]
-      },
-    ]);
-  },[]);
+    fetchTasks();
+  
+  },[projectId]);
   return (
     tasks.map((task) => (
       <div key={task.id} className="relative flex flex-col bg-clip-border rounded-xl bg-white text-gray-700 shadow-md">

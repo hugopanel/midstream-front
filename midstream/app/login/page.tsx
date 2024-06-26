@@ -53,6 +53,7 @@ export default function Login() {
 
 			const dataName = await responseName.json();
 			localStorage.setItem('userName', dataName.username);
+			localStorage.setItem('userId', dataName.id);
 			console.log('Login successful:', dataName);
 
 			router.push('/homepage');
