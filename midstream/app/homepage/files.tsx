@@ -3,14 +3,16 @@ import { useEffect, useState } from 'react';
 import { File } from '../file_explorer/page';
 import {formatDate } from "../format/format";
 import { Project } from '../navigation/selectProject';
+import NavTable from '../navigation/navTable';
 
 
-const maxFiles = 8;
+const maxFiles = 5;
 type Files = {
 	selectedProject: Project;
 }
 const Files: React.FC<Files> = ({ selectedProject}) =>{
 	const [files, setFiles] = useState<File[]>([]);
+	const [filesShown, setFilesShown] = useState<File[]>([]);
 	async function fetchFiles() {
 		try {
 			if (!selectedProject.id) {
@@ -28,7 +30,7 @@ const Files: React.FC<Files> = ({ selectedProject}) =>{
 				let files = data.files.sort((a: File, b: File) => {
 					return new Date(b.modified_date).getTime() - new Date(a.modified_date).getTime();
 				});
-				setFiles(files.slice(0, maxFiles) );
+				setFiles(files);
 			} else {
 				console.error('Expected an array but received:', data);
 			}
@@ -61,6 +63,7 @@ const Files: React.FC<Files> = ({ selectedProject}) =>{
 				</button>
 			</div>
 			<div className="p-6 px-0 pt-0 pb-2">
+				<NavTable list={files} setListShown={setFilesShown} maxLinesOnTable={maxFiles} table={
 				<table className="w-full min-w-[640px] table-auto">
 					<thead>
 						<tr>
@@ -76,7 +79,7 @@ const Files: React.FC<Files> = ({ selectedProject}) =>{
 						</tr>
 					</thead>
 					<tbody>
-						{files.map((file) => (
+						{filesShown.map((file) => (
 							<tr key={file.id}>
 								<td className="py-3 px-5 border-b border-blue-gray-50">
 									<div className="flex items-center gap-4">
@@ -95,6 +98,7 @@ const Files: React.FC<Files> = ({ selectedProject}) =>{
 						))}
 					</tbody>
 				</table>
+				}/>
 			</div>
 		</div>
 	)
