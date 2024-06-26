@@ -9,7 +9,17 @@ const Projects: React.FC = () => {
 	const [projects, setProjects] = useState<Project[]>([]);
 	async function fetchProjects() {
 		try {
-			const response = await fetch('api/projects');
+			const token = localStorage.getItem('token');
+      console.log(token);
+      const response = await fetch('/api/projects',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(token),
+        }
+      );
 			const data = await response.json();
 			if (Array.isArray(data.projects)) {
 				let projects = data.projects.sort((a: Project, b: Project) => {
