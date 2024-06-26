@@ -35,6 +35,7 @@ export default function Login() {
 
     const Load = async () => {
         setErrorInfo('');
+        setLoadingPassword('');
 
         const token = localStorage.getItem('token');
 
