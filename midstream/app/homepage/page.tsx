@@ -2,20 +2,15 @@
 import Tasks from "./tasks";
 import Files from "./files";
 import Projects from "./projects";
-import { Project } from "./projects";
 import NavBare from "../navigation/navBare";
 import SideBare from "../navigation/sideBare";
+import SelectProject, { Project } from "../navigation/selectProject";
+import { use, useEffect, useState } from "react";
 
 const page = 'Dashboard';
 export default function HomePage() {
-  const project: Project = {
-    id: 1,
-    name: "Project A",
-    description: "This is the project A",
-    beginning_date: new Date('12-12-2022'),
-    progress: 20,
-  }
 
+  const [selectedProject, setSelectedProject] = useState<Project>({id:'',name:''});
   const icon: React.ReactNode = (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-8 h-8 text-inherit">
       <path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z"></path>
@@ -27,13 +22,13 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-r from-indigo-500 from-5% via-blue-300 via-30% to-cyan-50 to-95%">
       <SideBare page={page} />
       <div className="p-4 xl:ml-80">
-        <NavBare title="Dashboard" icon={icon} />
+        <NavBare title="Dashboard" icon={icon} searchBar={<SelectProject selectedProject={selectedProject} setSelectedProject={setSelectedProject} />} />
         <div className="mt-12">
           <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-2 xl:grid-cols-4">
             <Tasks/>
           </div>
           <div className="mb-4 grid grid-cols-1 gap-6 xl:grid-cols-3">
-            <Files/>
+            <Files selectedProject={selectedProject} />
             <Projects/>
           </div>
         </div>

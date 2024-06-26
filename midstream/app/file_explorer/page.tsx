@@ -4,7 +4,39 @@ import { formatSize, formatDate } from "../format/format";
 import NavBare from "../navigation/navBare";
 import SideBare from "../navigation/sideBare";
 import SearchBare from '../navigation/searchBare';
+import SelectProject from '../navigation/selectProject';
+import { Project } from '../navigation/selectProject';
+import UploadForm from './uploadForm';
 
+
+const downloadFile = async (fileId: string,fileName: string ) => {
+  try {
+    const response = await fetch('/api/downloadFile', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ fileId }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to download file.");
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error: any) {
+    console.error('Error downloading file:', error.message);
+  }
+};
 const maxFilesOnPage = 7;
 const page = 'Files';
 export default function FileExplorer() {
@@ -13,11 +45,22 @@ export default function FileExplorer() {
 	const [filesShown, setFilesShown] = useState<File[]>([]);
 	const [search, setSearch] = useState<string>('');
 	const [files, setFiles] = useState<File[]>([]);
-	const[submitSearch, setSubmitSearch] = useState<string>('');
+	const [submitSearch, setSubmitSearch] = useState<string>('');
+	const [selectedProject, setSelectedProject] = useState<Project>({ id: '', name: '' });
 
 	async function fetchFiles() {
 		try {
-			const response = await fetch('api/files');
+			if (!selectedProject.id) {
+				return;
+			}
+			const response = await fetch(`/api/GetFiles/`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ projectId: selectedProject.id }),
+			});
+
 			const data = await response.json();
 			if (Array.isArray(data.files)) {
 				let files = data.files.sort((a: File, b: File) => {
@@ -34,7 +77,7 @@ export default function FileExplorer() {
 
 	useEffect(() => {
 		fetchFiles();
-	}, [selectedPage]);
+	}, [selectedPage, selectedProject]);
 
 	useEffect(() => {
 
@@ -64,14 +107,14 @@ export default function FileExplorer() {
 
 		setFilesShown(filteredFiles.slice((selectedPage - 1) * maxFilesOnPage, selectedPage * maxFilesOnPage));
 	}, [selectedPage, files, submitSearch]);
-
+	const handlerDownload = (id: string,name: string) => async () => downloadFile(id,name);
 	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value);
-	const handleSearchSubmit = (e: React.FormEvent) => {e.preventDefault(); setSubmitSearch(search);};
-		return (
+	const handleSearchSubmit = (e: React.FormEvent) => { e.preventDefault(); setSubmitSearch(search); };
+	return (
 		<div className="min-h-screen bg-gradient-to-r from-indigo-500 from-5% via-blue-300 via-30% to-cyan-50 to-95%">
 			<SideBare page={page} />
 			<div className="p-4 xl:ml-80">
-				<NavBare title="Your Files" icon={icon} />
+				<NavBare title="Your Files" icon={icon} searchBar={<SelectProject selectedProject={selectedProject} setSelectedProject={setSelectedProject} />} />
 				<div className="mt-6">
 					<div className="mb-4 grid grid-cols-1 gap-6 xl:grid-cols-3">
 						<div className="relative flex flex-col bg-clip-border rounded-xl bg-white text-gray-700 shadow-md overflow-hidden xl:col-span-3">
@@ -90,20 +133,7 @@ export default function FileExplorer() {
 										Download all
 									</button>
 
-									<button className="flex items-center justify-center w-1/2 px-5 py-2 text-sm tracking-wide text-white transition-colors duration-200 bg-gradient-to-tr from-blue-600 to-indigo-400 rounded-lg sm:w-auto gap-x-2 hover:bg-gradient-to-l from-blue-600 to-indigo-400">
-										<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-											<g clipPath="">
-												<path d="M13.3333 13.3332L9.99997 9.9999M9.99997 9.9999L6.66663 13.3332M9.99997 9.9999V17.4999M16.9916 15.3249C17.8044 14.8818 18.4465 14.1806 18.8165 13.3321C19.1866 12.4835 19.2635 11.5359 19.0351 10.6388C18.8068 9.7417 18.2862 8.94616 17.5555 8.37778C16.8248 7.80939 15.9257 7.50052 15 7.4999H13.95C13.6977 6.52427 13.2276 5.61852 12.5749 4.85073C11.9222 4.08295 11.104 3.47311 10.1817 3.06708C9.25943 2.66104 8.25709 2.46937 7.25006 2.50647C6.24304 2.54358 5.25752 2.80849 4.36761 3.28129C3.47771 3.7541 2.70656 4.42249 2.11215 5.23622C1.51774 6.04996 1.11554 6.98785 0.935783 7.9794C0.756025 8.97095 0.803388 9.99035 1.07431 10.961C1.34523 11.9316 1.83267 12.8281 2.49997 13.5832" stroke="currentColor" strokeWidth="1.67" strokeLinecap="round" strokeLinejoin="round" />
-											</g>
-											<defs>
-												<clipPath id="">
-													<rect width="20" height="20" fill="white" />
-												</clipPath>
-											</defs>
-										</svg>
-
-										<span>Upload</span>
-									</button>
+									<UploadForm project={selectedProject} />
 								</div>
 							</div>
 							<div className="p-6 pt-0 pb-2 mt-5">
@@ -120,7 +150,7 @@ export default function FileExplorer() {
 												<p className="block antialiased font-sans text-[12px] font-bold uppercase text-blue-50">Creation</p>
 											</th>
 											<th className="border-b border-blue-gray-50 py-3 px-6 text-left">
-												<p className="block antialiased font-sans text-[12px] font-bold uppercase text-blue-50">Uploaded By</p>
+												<p className="block antialiased font-sans text-[12px] font-bold uppercase text-blue-50">Description</p>
 											</th>
 											<th className="border-b border-blue-gray-50 py-3 px-6 text-left">
 												<p className="block antialiased font-sans text-[12px] font-bold uppercase text-blue-50">Last Update</p>
@@ -141,7 +171,7 @@ export default function FileExplorer() {
 												</td>
 
 												<td className="py-3 px-5 border-b border-blue-gray-50">
-													<p className="block antialiased font-sans text-xs font-medium text-blue-gray-600">{file.type}</p>
+													<p className="block antialiased font-sans text-xs font-medium text-blue-gray-600">{file.extension}</p>
 												</td>
 												<td className="py-3 px-5 border-b border-blue-gray-50">
 													<div className="w-10/12">
@@ -150,7 +180,7 @@ export default function FileExplorer() {
 												</td>
 												<td className="py-3 px-5 border-b border-blue-gray-50">
 													<div className="w-10/12">
-														<p className="antialiased font-sans mb-1 block text-xs font-medium text-blue-gray-600">{file.uploaded_by}</p>
+														<p className="antialiased font-sans mb-1 block text-xs font-medium text-blue-gray-600">{file.description}</p>
 													</div>
 												</td>
 												<td className="py-3 px-5 border-b border-blue-gray-50">
@@ -160,7 +190,7 @@ export default function FileExplorer() {
 												</td>
 												<td className="py-3 px-5 border-b border-blue-gray-50">
 
-													<button aria-expanded="false" aria-haspopup="menu" id=":r2:" className="relative middle none font-sans font-medium text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none w-10 max-w-[40px] h-10 max-h-[40px] rounded-lg text-xs text-gray-700 hover:bg-blue-gray-500/10 active:bg-blue-gray-500/30" type="button">
+													<button aria-expanded="false" aria-haspopup="menu" id=":r2:" onClick={handlerDownload(file.id,file.name)} className="relative middle none font-sans font-medium text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none w-10 max-w-[40px] h-10 max-h-[40px] rounded-lg text-xs text-gray-700 hover:bg-blue-gray-500/10 active:bg-blue-gray-500/30" type="button">
 														<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
 															<path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
 														</svg>
@@ -228,12 +258,12 @@ const icon: React.ReactElement = (
 );
 
 export interface File {
-	id: number;
+	id: string;
 	name: string;
 	size: number;
-	type: string;
+	extension: string;
 	created_date: Date;
-	uploaded_by: string;
+	description: string;
 	modified_date: Date;
 	path: string;
 }

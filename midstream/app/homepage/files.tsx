@@ -2,14 +2,27 @@
 import { useEffect, useState } from 'react';
 import { File } from '../file_explorer/page';
 import {formatDate } from "../format/format";
+import { Project } from '../navigation/selectProject';
 
 
 const maxFiles = 8;
-const Files: React.FC = () =>{
+type Files = {
+	selectedProject: Project;
+}
+const Files: React.FC<Files> = ({ selectedProject}) =>{
 	const [files, setFiles] = useState<File[]>([]);
 	async function fetchFiles() {
 		try {
-			const response = await fetch('api/files');
+			if (!selectedProject.id) {
+				return;
+			}
+			const response = await fetch(`/api/GetFiles/`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ projectId: selectedProject.id }),
+			});
 			const data = await response.json();
 			if (Array.isArray(data.files)) {
 				let files = data.files.sort((a: File, b: File) => {
@@ -26,7 +39,7 @@ const Files: React.FC = () =>{
 
 	useEffect(() => {
 		fetchFiles();
-	}, []);
+	}, [selectedProject]);
 
 	return (
 		<div className="relative flex flex-col bg-clip-border rounded-xl bg-white text-gray-700 shadow-md overflow-hidden xl:col-span-2">
@@ -71,7 +84,7 @@ const Files: React.FC = () =>{
 									</div>
 								</td>
 								<td className="py-3 px-5 border-b border-blue-gray-50">
-									<p className="block antialiased font-sans text-xs font-medium text-blue-gray-600">{file.type}</p>
+									<p className="block antialiased font-sans text-xs font-medium text-blue-gray-600">{file.extension}</p>
 								</td>
 								<td className="py-3 px-5 border-b border-blue-gray-50">
 									<div className="w-10/12">
