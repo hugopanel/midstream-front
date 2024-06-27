@@ -1,11 +1,11 @@
 "use client";
 
 import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import Image from "next/image";
 import Link from 'next/link';
 import logo from '../assets/logo.png';
-import { useRouter } from 'next/navigation';
 
 interface MemberToSelect{
     userId: string;
@@ -15,6 +15,7 @@ interface MemberToSelect{
 export default function NewTask() {
 
     const [title, setTitle] = useState<string>();
+    const [status, setStatus] = useState<string>();
     const [startDate, setStartDate] = useState<string>();
     const [endDate, setEndDate] = useState<string>();
     const [description, setDescription] = useState<string>();
@@ -25,6 +26,7 @@ export default function NewTask() {
     const [members, setMembers] = useState<MemberToSelect[]>([]);
 
     const router = useRouter();
+    const searchParams = useSearchParams();
 
     const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => setTitle(e.target.value);
     const handleStartDateChange = (e: ChangeEvent<HTMLInputElement>) => setStartDate(e.target.value);
@@ -77,7 +79,6 @@ export default function NewTask() {
         const token = localStorage.getItem('token');
         const projectId = localStorage.getItem('projectId');
         const relatedTo = ["nothing"];
-        const status = "To do";
 
         try {
             const response = await fetch('/api/create_task', {
@@ -94,8 +95,6 @@ export default function NewTask() {
             }
 
             const data = await response.json();
-            setMembers(data.members);
-            console.log(data.members);
             router.push('/tasks');
             // localStorage.setItem('token', data.token);
             // setSuccessEmail('Email updated.');
@@ -108,6 +107,8 @@ export default function NewTask() {
     };
 
     useEffect(() => {
+        const status = searchParams.get('status');
+        setStatus(status || 'To do');
         getMembers();
         setPriority("can wait");
         setAuthor(localStorage.getItem("userName") || "User");

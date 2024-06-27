@@ -13,6 +13,7 @@ import NavBare from "../navigation/navBare";
 import SideBare from "../navigation/sideBare";
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import logo from '../assets/logo2.png';
+import { useRouter } from 'next/navigation';
 
 const sortOptions = [
   { name: 'Most Popular', href: '#', current: true },
@@ -95,6 +96,8 @@ const App: React.FC = () => {
   const dp1Ref = useRef<HTMLDivElement>(null);
   const dp2Ref = useRef<HTMLDivElement>(null);
   const dp3Ref = useRef<HTMLDivElement>(null);
+
+  const router = useRouter();
 
   const [userName, setUserName] = useState("User");
 
@@ -402,6 +405,9 @@ const App: React.FC = () => {
 }, [selectedProjectId]);
 
 
+  const addTask = (status) => {
+    router.push('/tasks_create?status=' + status);
+  }
 
   const handleSelectedProjectChange = (e: ChangeEvent<HTMLInputElement>) => setSelectedProjectId(e.target.value);
 
@@ -725,7 +731,7 @@ const App: React.FC = () => {
               ))}
               
             </div>
-            <button className="text-lg font-semibold mb-2 pt-2 mt-2 flex items-center bottom-0"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="h-5 w-5 text-white font-semibold">
+            <button onClick={(e) => addTask("To do")}className="text-lg font-semibold mb-2 pt-2 mt-2 flex items-center bottom-0"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="h-5 w-5 text-white font-semibold">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
               Add Task
@@ -775,7 +781,7 @@ const App: React.FC = () => {
                 </div>
               ))}
             </div>
-            <button className="text-lg font-semibold mb-2 pt-2 mt-2 flex items-center bottom-0"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="h-5 w-5 text-white font-semibold">
+            <button onClick={(e) => addTask("In progress")} className="text-lg font-semibold mb-2 pt-2 mt-2 flex items-center bottom-0"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="h-5 w-5 text-white font-semibold">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
               Add Task
@@ -826,7 +832,7 @@ const App: React.FC = () => {
               ))}
                 
             </div>
-            <button className="text-lg font-semibold mb-2 pt-2 mt-2 flex items-center bottom-0"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="h-5 w-5 text-white font-semibold">
+            <button onClick={(e) => addTask("Done")} className="text-lg font-semibold mb-2 pt-2 mt-2 flex items-center bottom-0"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="h-5 w-5 text-white font-semibold">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
               Add Task
