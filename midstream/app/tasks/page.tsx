@@ -398,6 +398,7 @@ const App: React.FC = () => {
       saveTasks();
     }
     getTasks();
+    localStorage.setItem("projectId", selectedProjectId || '');
 }, [selectedProjectId]);
 
 
