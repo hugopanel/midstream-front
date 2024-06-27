@@ -406,10 +406,18 @@ const App: React.FC = () => {
 
 
   const addTask = (status) => {
+    saveTasks();
     router.push('/tasks_create?status=' + status);
   }
 
-  const handleSelectedProjectChange = (e: ChangeEvent<HTMLInputElement>) => setSelectedProjectId(e.target.value);
+  const editTask = (taskId) => {
+    saveTasks();
+    console.log("task edit");
+    console.log(taskId);
+    router.push('/tasks_edit?taskId=' + taskId);
+  }
+
+  const handleSelectedProjectChange = (e: ChangeEvent<HTMLSelectElement>) => setSelectedProjectId(e.target.value);
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-indigo-500 from-5% via-blue-300 via-30% to-cyan-50 to-95%">
@@ -718,13 +726,11 @@ const App: React.FC = () => {
                     </div>
                     <div className="border-t border-blue-gray-50 p-4 flex justify-end">
                       <span className="inline-flex items-center capitalize rounded-md bg-green-50 px-4 py-2 text-sm font-medium text-green-600 ring-1 ring-inset ring-green-500/10 mr-[10px]">{task.typeOfTask}</span>
-                      <Link href="/tasks_edit" className='flex'>
-                        <button>
+                        <button onClick={(e) => editTask(task.id)}>
                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-6 h-6 text-gray-500 ml-3">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
                           </svg>
                         </button>
-                      </Link>
                     </div>
                   </div>
                 </div>
@@ -769,13 +775,11 @@ const App: React.FC = () => {
                     </div>
                     <div className="border-t border-blue-gray-50 p-4 flex justify-end">
                       <span className="inline-flex items-center capitalize rounded-md bg-green-50 px-4 py-2 text-sm font-medium text-green-600 ring-1 ring-inset ring-green-500/10 mr-[10px]">{task.typeOfTask}</span>
-                      <Link href="/tasks_edit" className='flex'>
-                        <button>
+                        <button onClick={(e) => editTask(task.id)}>
                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-6 h-6 text-gray-500 ml-3">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
                           </svg>
                         </button>
-                      </Link>
                     </div>
                   </div>
                 </div>
@@ -819,13 +823,11 @@ const App: React.FC = () => {
                     </div>
                     <div className="border-t border-blue-gray-50 p-4 flex justify-end">
                       <span className="inline-flex items-center capitalize rounded-md bg-green-50 px-4 py-2 text-sm font-medium text-green-600 ring-1 ring-inset ring-green-500/10 mr-[10px]">{task.typeOfTask}</span>
-                      <Link href="/tasks_edit" className='flex'>
-                        <button>
+                        <button onClick={(e) => editTask(task.id)}>
                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-6 h-6 text-gray-500 ml-3">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
                           </svg>
                         </button>
-                      </Link>
                     </div>
                   </div>
                 </div>
