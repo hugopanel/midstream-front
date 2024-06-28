@@ -25,7 +25,8 @@ const config: Config = {
     'bg-orange-50', 'text-orange-600', 'ring-orange-500/10',
     // Ajoutez toutes les autres classes dynamiques nécessaires ici
     // Projects
-    'from-pink-600 to-pink-200', 'from-green-600 to-green-200'
+    'from-pink-600 to-pink-200', 'from-green-600 to-green-200',
+    'border-l-8'
   ],
   plugins: [],
 };

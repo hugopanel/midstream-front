@@ -3,6 +3,7 @@ import { ChangeEvent, Dispatch, SetStateAction, useEffect, useState } from "reac
 type SelectProjectProps = {
   selectedProject: Project;
   setSelectedProject: Dispatch<SetStateAction<Project>>;
+  className?: string;
 };
 
 export interface Project {
@@ -10,7 +11,7 @@ export interface Project {
   name: string;
 }
 
-const SelectProject: React.FC<SelectProjectProps> = ({ selectedProject, setSelectedProject }) => {
+const SelectProject: React.FC<SelectProjectProps> = ({ selectedProject, setSelectedProject, className }) => {
   const [projects, setProjects] = useState<Project[]>([]);
 
   const fetchProjects = async () => {
@@ -56,11 +57,10 @@ const SelectProject: React.FC<SelectProjectProps> = ({ selectedProject, setSelec
   };
 
   return (
-    <div className="pt-2 relative">
-      <label htmlFor="underline_select" className="sr-only">Underline select</label>
+    <div className="relative">
       <select 
         id="underline_select" 
-        className="block font-semibold uppercase text-center py-2.5 px-0 w-full text-m bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200 peer" 
+        className={ className || "block font-semibold uppercase text-center py-2.5 px-0 w-full text-m bg-transparent border-0 border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200 peer" }
         value={selectedProject.id} 
         onChange={handleSelectedProjectChange}
       >

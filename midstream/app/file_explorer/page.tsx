@@ -42,7 +42,6 @@ const maxFilesOnPage = 7;
 const page = 'Files';
 export default function FileExplorer() {
 	const [selectedPage, setSelectedPage] = useState<number>(1);
-	const [navPages, setNavPages] = useState<number[]>([1]);
 	const [filesShown, setFilesShown] = useState<File[]>([]);
 	const [search, setSearch] = useState<string>('');
 	const [files, setFiles] = useState<File[]>([]);
@@ -79,12 +78,10 @@ export default function FileExplorer() {
 
 	useEffect(() => {
 		fetchFiles();
-	}, [selectedPage, selectedProject]);
+	}, [ selectedProject]);
 
 	useEffect(() => {
-
 		setFilteredFiles( Array.isArray(files) ? files.filter((file) => file.name.toLowerCase().includes(submitSearch.toLowerCase())) : []);
-		setFilesShown(filteredFiles.slice((selectedPage - 1) * maxFilesOnPage, selectedPage * maxFilesOnPage));
 	}, [files, submitSearch]);
 	const handlerDownload = (id: string,name: string) => async () => downloadFile(id,name);
 	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value);
