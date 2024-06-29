@@ -210,16 +210,10 @@ const App: React.FC = () => {
       if (allTask) {
         allTask.status = dropRef.current.id;
       }
-
-      const updatedTasks = tasks.map((task) =>
-        task.id === dragTemp.id ? { ...task, status: dropRef.current.id } : task
-      );
-
+      
       const updatedAllTasks = allTasks.map((task) =>
         task.id === dragTemp.id ? { ...task, status: dropRef.current.id } : task
       );
-
-      setTasks(updatedTasks);
       setAllTasks(updatedAllTasks);
       console.log("setTasks", tasks);
       
