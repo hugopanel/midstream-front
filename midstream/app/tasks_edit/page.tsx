@@ -193,11 +193,7 @@ export default function NewTask() {
         }
     }, []);
 
-    const deleteTask = async () => {    
-
-        console.log("delete task");
-        console.log(taskId);
-        
+    const deleteTask = async () => {            
         try {
             const response = await fetch('/api/delete_task', {
                 method: 'POST',

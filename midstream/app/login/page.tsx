@@ -52,6 +52,7 @@ export default function Login() {
 			}
 
 			const dataName = await responseName.json();
+			localStorage.setItem('userId', dataName.id);
 			localStorage.setItem('userName', dataName.username);
 			console.log('Login successful:', dataName);
 
