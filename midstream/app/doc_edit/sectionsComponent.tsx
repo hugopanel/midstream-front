@@ -1,11 +1,12 @@
 "use client";
 import Link from 'next/link';
-import { useState, useEffect, ChangeEventHandler, use } from 'react';
+import { useState, useEffect, ChangeEventHandler, use, SetStateAction } from 'react';
 
 import { ChangeEvent } from 'react';
 
 type SectionsComponentProps = {
-  initialSections: Section[];
+  sections: Section[];
+  setSections: (sections: Section[]) => void;
   isParentDisabeled?: boolean;
 };
 
@@ -13,6 +14,12 @@ export interface Section {
   title?: string;
   content: Section[] | string;
   type: SectionType;
+  reference?: Reference;
+}
+interface Reference {
+  document: string;
+  section: string;
+  documentId: string;
 }
 export enum SectionType {
   Section = 'section',
@@ -21,14 +28,9 @@ export enum SectionType {
   Referenced = 'referenced',
 }
 
-const SectionsComponent: React.FC<SectionsComponentProps> = ({ initialSections, isParentDisabeled = false }) => {
-  const [sections, setSections] = useState<Section[]>(initialSections);
+const SectionsComponent: React.FC<SectionsComponentProps> = ({ sections, setSections, isParentDisabeled = false}) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [showIndexTitle, setShowIndexTitle] = useState<number | null>(null);
-
-  useEffect(() => {
-    setSections(initialSections);
-  }, [initialSections]);
 
   
 
@@ -39,7 +41,6 @@ const SectionsComponent: React.FC<SectionsComponentProps> = ({ initialSections, 
       return;
     }
 
-    // content = [{ content: '', type: SectionType.Paragraph }];
     content = [];
     if (type === SectionType.Section) {
 
@@ -51,8 +52,8 @@ const SectionsComponent: React.FC<SectionsComponentProps> = ({ initialSections, 
     ;
   };
 
-  const handleDeletSection = (section: Section): void => {
-    setSections(sections.filter((s) => s !== section));
+  const handleDeleteSection = (index: number): void => {
+    setSections(sections.filter((_, i) => i !== index));
   }
 
   const handleSectionTitleChange = (index: number, e: ChangeEvent<HTMLInputElement>): void => {
@@ -67,8 +68,14 @@ const SectionsComponent: React.FC<SectionsComponentProps> = ({ initialSections, 
     setSections(newSections);
   }
 
+  const handleNestedSectionsChange = (index: number, newNestedSections: Section[]): void => {
+    const newSections = [...sections];
+    newSections[index].content = newNestedSections;
+    setSections(newSections);
+  }
+
   return (
-    <div  >
+    <div>
       {sections.length == 0 && <SectionButtons index={0} handleAddSection={handleAddSection} isDisabeled={isParentDisabeled} />}
       {
         sections.map((section, index) => {
@@ -90,7 +97,7 @@ const SectionsComponent: React.FC<SectionsComponentProps> = ({ initialSections, 
               {index == 0 && <SectionButtons index={0} handleAddSection={handleAddSection}  isDisabeled={isParentDisabeled}/>}
               {section.type === SectionType.Reference ?
                 <div className="col-span-2 flex">
-                  <p className='pl-6 pr-4'>References <Link href="/doc_explorer"><u className="underline text-blue-300">Doc 1</u> </Link></p>
+                  <p className='pl-6 pr-4'>References <Link href={`/doc_edit?id=${section.reference?.documentId}`}><u className="underline text-blue-300">{section.reference?.document}</u> </Link></p>
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="h-5 w-5">
                     <path strokeLinecap="round" strokeLinejoin="round" d={"M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"} />
                   </svg>
@@ -98,7 +105,7 @@ const SectionsComponent: React.FC<SectionsComponentProps> = ({ initialSections, 
                 :
                 section.type === SectionType.Referenced &&
                 <div className="col-span-2 flex">
-                  <p className='pl-6 pr-4'>Referenced in <Link href="/doc_explorer"><u className="underline text-blue-300">Doc 2</u> </Link></p>
+                  <p className='pl-6 pr-4'>Referenced in <Link  href={`/doc_edit?id=${section.reference?.documentId}`}><u className="underline text-blue-300">{section.reference?.document}</u> </Link></p>
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="h-5 w-5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
                   </svg>
@@ -146,7 +153,8 @@ const SectionsComponent: React.FC<SectionsComponentProps> = ({ initialSections, 
                     />
                   ) : (
                     <SectionsComponent
-                      initialSections={section.content as Section[]}
+                      sections={section.content as Section[]}
+                      setSections={(newNestedSections) => handleNestedSectionsChange(index, newNestedSections)}
                       isParentDisabeled={isDisabeled}
                     />
                   )
@@ -154,8 +162,8 @@ const SectionsComponent: React.FC<SectionsComponentProps> = ({ initialSections, 
                   <div className="absolute top-0 right-0"
                     style={{ transition: 'opacity 0.3s ease-in-out', opacity: hoveredIndex === index ? 1 : 0 }}
                   >
-                    <button onClick={() => handleDeletSection(section)} disabled={isParentDisabeled} >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="h-6 w-6 border p-1 rounded">
+                    <button onClick={() => handleDeleteSection(index)} disabled={isParentDisabeled} >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="h-6 w-6 p-1 rounded">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                       </svg>
                     </button>

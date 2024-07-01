@@ -41,7 +41,6 @@ const downloadFile = async (fileId: string,fileName: string ) => {
 const maxFilesOnPage = 7;
 const page = 'Files';
 export default function FileExplorer() {
-	const [selectedPage, setSelectedPage] = useState<number>(1);
 	const [filesShown, setFilesShown] = useState<File[]>([]);
 	const [search, setSearch] = useState<string>('');
 	const [files, setFiles] = useState<File[]>([]);
