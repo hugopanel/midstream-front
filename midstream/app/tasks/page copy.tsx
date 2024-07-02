@@ -3,7 +3,6 @@
 
 import { Dialog, Disclosure, Menu, Popover, Transition } from '@headlessui/react'
 import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
-import { format, parse } from 'date-fns';
 
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { Fragment } from 'react'
@@ -83,8 +82,6 @@ interface Task {
   author: string;
   assignedTo: string;
   relatedTo: string[];
-  avatar: string;
-  colour: string;
 }
 
 function classNames(...classes: string[]) {
@@ -92,7 +89,6 @@ function classNames(...classes: string[]) {
 }
 
 const page ='Tasks';
-
 
 const App: React.FC = () => {
   const [dragTemp, setDragTemp] = useState<HTMLElement | null>(null);
@@ -104,27 +100,17 @@ const App: React.FC = () => {
   const router = useRouter();
 
   const [userName, setUserName] = useState("User");
-  const [userId, setUserId] = useState("User");
 
   const [FiltersDb, setFiltersDb] = useState<Filter[]>([]);
     
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);  
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [allTasks, setAllTasks] = useState<Task[]>([]); 
+  const [projects, setProjects] = useState<Project[]>([]); 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [tasksToDo, setTasksToDo] = useState<Task[]>([]);
   const [tasksInProgress, setTasksInProgress] = useState<Task[]>([]);
   const [tasksDone, setTasksDone] = useState<Task[]>([]);
   const [tags, setTags] = useState<string[]>([]);
   const [priorities, setPriorities] = useState<string[]>([]);
-
-  const [avatarPaths] = useState([
-    "M12 12.75c1.148 0 2.278.08 3.383.237 1.037.146 1.866.966 1.866 2.013 0 3.728-2.35 6.75-5.25 6.75S6.75 18.728 6.75 15c0-1.046.83-1.867 1.866-2.013A24.204 24.204 0 0 1 12 12.75Zm0 0c2.883 0 5.647.508 8.207 1.44a23.91 23.91 0 0 1-1.152 6.06M12 12.75c-2.883 0-5.647.508-8.208 1.44.125 2.104.52 4.136 1.153 6.06M12 12.75a2.25 2.25 0 0 0 2.248-2.354M12 12.75a2.25 2.25 0 0 1-2.248-2.354M12 8.25c.995 0 1.971-.08 2.922-.236.403-.066.74-.358.795-.762a3.778 3.778 0 0 0-.399-2.25M12 8.25c-.995 0-1.97-.08-2.922-.236-.402-.066-.74-.358-.795-.762a3.734 3.734 0 0 1 .4-2.253M12 8.25a2.25 2.25 0 0 0-2.248 2.146M12 8.25a2.25 2.25 0 0 1 2.248 2.146M8.683 5a6.032 6.032 0 0 1-1.155-1.002c.07-.63.27-1.222.574-1.747m.581 2.749A3.75 3.75 0 0 1 15.318 5m0 0c.427-.283.815-.62 1.155-.999a4.471 4.471 0 0 0-.575-1.752M4.921 6a24.048 24.048 0 0 0-.392 3.314c1.668.546 3.416.914 5.223 1.082M19.08 6c.205 1.08.337 2.187.392 3.314a23.882 23.882 0 0 1-5.223 1.082",
-    "M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z",
-    "M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42",
-    "M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z",
-    "M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0 0 12 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 0 1-2.031.352 5.988 5.988 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971Zm-16.5.52c.99-.203 1.99-.377 3-.52m0"
-]);
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, element: HTMLElement) => {
     setDragTemp(element);
@@ -205,16 +191,13 @@ const App: React.FC = () => {
       if (task) {
         task.status = dropRef.current.id;
       }
+      console.log(task);
 
-      const allTask = allTasks.find((task) => task.id === dragTemp.id);
-      if (allTask) {
-        allTask.status = dropRef.current.id;
-      }
-      
-      const updatedAllTasks = allTasks.map((task) =>
+      const updatedTasks = tasks.map((task) =>
         task.id === dragTemp.id ? { ...task, status: dropRef.current.id } : task
       );
-      setAllTasks(updatedAllTasks);
+
+      setTasks(updatedTasks);
       console.log("setTasks", tasks);
       
   
@@ -249,20 +232,6 @@ const App: React.FC = () => {
     // Format the date to ISO string and return it
     return date.toISOString();
   };
-
-  const hexToRgb = (hex: string): string => {
-    // Remove the # symbol if present
-    const cleanedHex = hex.replace("#", "");
-
-    // Split the hex value into three parts (red, green, and blue)
-    const red = parseInt(cleanedHex.substring(0, 2), 16);
-    const green = parseInt(cleanedHex.substring(2, 4), 16);
-    const blue = parseInt(cleanedHex.substring(4, 6), 16);
-
-    // Return the RGB value as a string
-    return `rgba(${red}, ${green}, ${blue},1)`;
-};
-
 
   const getTasks = async () => {
     // setLoadingEmail('Loading...');
@@ -304,7 +273,6 @@ const App: React.FC = () => {
           }
         }
         setTasks(data.tasks);
-        setAllTasks(data.tasks);
         setTasksToDo(tasksToDo);
         setTasksInProgress(tasksInProgress);
         setTasksDone(tasksDone);
@@ -317,16 +285,16 @@ const App: React.FC = () => {
           optiontagsfilter.push(option);
         }
         optiontagsfilter.push({ value : 'Mine', label : 'My tasks', checked : false});
-        filterstoadd.push({id:'tags', name:'Tags', options : optiontagsfilter});
+        filterstoadd.push({id:'category', name:'Tags', options : optiontagsfilter});
         setPriorities(data.priorities);
         var optionprioritiesfilter = [];
         for(let priority in data.priorities){
           var option = { value : data.priorities[priority], label : data.priorities[priority], checked : false};
           optionprioritiesfilter.push(option);
         }
-        filterstoadd.push({id:'priority', name:'Urgency', options: optionprioritiesfilter})
+        filterstoadd.push({id:'color', name:'Urgency', options: optionprioritiesfilter})
         filterstoadd.push({
-          id: 'dates',
+          id: 'sizes',
           name: 'Due Date',
           options: [
             { value: 'today', label: 'Today', checked: false },
@@ -346,7 +314,7 @@ const App: React.FC = () => {
     } finally {
         // setLoadingEmail('');
     }
-  };
+};
 
   // const updateTasksLists = () => {
   //   var newTasksToDo: Task[] = [];
@@ -390,12 +358,12 @@ const App: React.FC = () => {
     } catch (error) {
         console.error('Error fetching teams :', error);
     }
-  };
+};
 
   
   
   const saveTasks = async () => {
-    var tasksToSave = allTasks;
+    var tasksToSave = tasks;
     for(let task in tasksToSave){
       tasksToSave[task].beginningDate = convertToISOFormat(tasksToSave[task].beginningDate);
       tasksToSave[task].endDate = convertToISOFormat(tasksToSave[task].endDate);
@@ -420,147 +388,22 @@ const App: React.FC = () => {
     } catch (error: any) {
         console.error('Error saving tasks:', error);
     }
-  };
-
-  const setTasksToDisplay = (tasks: Task[]) => {
-    var tasksToDo: Task[] = [];
-    var tasksInProgress: Task[] = [];
-    var tasksDone: Task[] = [];
-    for (let task of tasks) {
-      if(task.status === 'To do') {
-        tasksToDo.push(task);
-      }
-      else if(task.status === 'In progress') {
-        tasksInProgress.push(task);
-      }
-      else {
-        tasksDone.push(task);
-      }
-    }
-    setTasksToDo(tasksToDo);
-    setTasksInProgress(tasksInProgress);
-    setTasksDone(tasksDone);
-  };
+};
       
 
   useEffect(() => { 
     fetchProjects();
     window.addEventListener('beforeunload', saveTasks);
     setUserName(localStorage.getItem("userName") || "User");
-    setUserId(localStorage.getItem("userId") || "User");
   }, []);
 
   useEffect(() => {
-    if(allTasks.length > 0) {
+    if(tasks.length > 0) {
       saveTasks();
     }
     getTasks();
     localStorage.setItem("projectId", selectedProjectId || '');
 }, [selectedProjectId]);
-
-  useEffect( () => {
-    setTasksToDisplay(tasks);
-  }, [tasks]);
-
-  const handleCheckboxChange = (sectionId, optionIdx) => {
-    var checkedOrNot = false;
-    let updatedFiltersDb;
-    console.log(FiltersDb);
-    setFiltersDb(prevFilters =>
-      updatedFiltersDb = prevFilters.map(section => {
-        if (section.id === sectionId) {
-          return {
-            ...section,
-            options: section.options.map((option, idx) => {
-              if (idx === optionIdx) {
-                checkedOrNot = !option.checked;
-                return { ...option, checked: !option.checked };
-              }
-              return option;
-            }),
-          };
-        }
-        return section;
-      })
-    );
-    console.log(updatedFiltersDb);
-    var section = FiltersDb.find(section => section.id === sectionId);
-    var option = section.options[optionIdx];
-    var value = option.value;
-    var filteredTasks = tasks;
-    if(checkedOrNot) {
-      filteredTasks = tasks.filter(task => {
-        if(sectionId === 'tags') {
-          if(value === 'Mine') {
-            return task.assignedTo === userId;
-          }
-          return task.typeOfTask === value;
-        }
-        if(sectionId === 'priority') {
-          return task.priority === value;
-        }
-        if(sectionId === 'dates') {
-          const now = new Date();
-          const endDate = parse(task.endDate, 'dd/MM/yyyy', new Date())
-          if(value === 'today') {
-            return task.endDate === formatDateTime(new Date().toString());
-          }
-          if(value === 'week') {
-            return endDate >= new Date(now.setDate(now.getDate() - now.getDay())) && endDate <= new Date(now.setDate(now.getDate() - now.getDay() + 6));
-          }
-          if(value === 'month') {
-            return endDate >= new Date(now.getFullYear(), now.getMonth(), 1) && endDate <= new Date(now.getFullYear(), now.getMonth() + 1, 0);
-          }
-        }
-      });       
-      setTasks(filteredTasks);
-      console.log(filteredTasks);
-    }
-    else{
-      setFilteredTasks(updatedFiltersDb);
-    }
-  };
-
-  const setFilteredTasks = (filtersDb) => {
-    console.log(filtersDb);
-    var filteredTasks = allTasks;
-      for(let section in filtersDb){
-        for(let option in filtersDb[section].options){
-          console.log(section, option);
-          var sectionObj = filtersDb[section];
-          var optionObj = sectionObj.options[option];
-          console.log(sectionObj, optionObj);
-          if(optionObj.checked){
-            var value = optionObj.value;
-            if(sectionObj.id === 'tags') {
-              if(value === 'Mine') {
-                filteredTasks = filteredTasks.filter(task => task.assignedTo === userId);
-              }
-              else{
-                filteredTasks = filteredTasks.filter(task => task.typeOfTask === value);
-              }
-            }
-            if(sectionObj.id === 'priority') {
-              filteredTasks = filteredTasks.filter(task => task.priority === value);
-            }
-            if(sectionObj.id === 'dates') {
-              const now = new Date();
-              if(value === 'today') {
-                filteredTasks = filteredTasks.filter(task => task.endDate === formatDateTime(new Date()));
-              }
-              if(value === 'week') {
-                filteredTasks = filteredTasks.filter(task => parse(task.endDate, 'dd/MM/yyyy', new Date()) >= new Date(now.setDate(now.getDate() - now.getDay())) && parse(task.endDate, 'dd/MM/yyyy', new Date()) <= new Date(now.setDate(now.getDate() - now.getDay() + 6)));
-              }
-              if(value === 'month') {
-                filteredTasks = filteredTasks.filter(task => parse(task.endDate, 'dd/MM/yyyy', new Date()) >= new Date(now.getFullYear(), now.getMonth(), 1) && parse(task.endDate, 'dd/MM/yyyy', new Date()) <= new Date(now.getFullYear(), now.getMonth() + 1, 0));
-              }
-            }
-          }
-        }
-      }
-    setTasks(filteredTasks);
-    console.log(filteredTasks);
-  }
 
 
   const addTask = (status) => {
@@ -790,7 +633,6 @@ const App: React.FC = () => {
                                         defaultValue={option.value}
                                         type="checkbox"
                                         defaultChecked={option.checked}
-                                        onChange={() => handleCheckboxChange(section.id, optionIdx)}
                                         className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                       />
                                       <label
@@ -861,7 +703,7 @@ const App: React.FC = () => {
             <h2 className="text-xl font-bold mb-2 ml-3">To Do</h2>
             <div
               id="To do"
-              className="drop flex-1 p-3 space-y-2 min-h-[460px]"
+              className="drop flex-1 space-y-2 min-h-[460px]"
               ref={dp1Ref}
               onDragOver={(e) => handleDragOver(e, dp1Ref)}
               onDrop={(e) => handleDrop(e, dp1Ref)}>
@@ -874,9 +716,9 @@ const App: React.FC = () => {
                   onDragStart={(e) => handleDragStart(e, e.currentTarget as HTMLElement)}
                 >
                   <div className="relative flex flex-col bg-clip-border rounded-xl bg-white/80 text-gray-700 shadow-md">
-                    <div className={`bg-clip-border mx-4 rounded-3xl overflow-hidden shadow-[${hexToRgb(task.colour)}] text-white shadow-lg absolute mt-2 grid h-13 w-13 place-items-center`} style={{ backgroundColor: hexToRgb(task.colour), boxShadow: `0px 10px 15px -3px ${hexToRgb(task.colour)}`}}>
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"  strokeWidth="1.5" stroke="currentColor" aria-hidden="true" className="w-5 h-5 m-2 text-white">
-                        <path strokeLinecap="round" strokeLinejoin="round" d={avatarPaths[task.avatar - 1]} />
+                    <div className={`bg-clip-border mx-4 rounded-3xl overflow-hidden ${task.priority === 'high' ? 'bg-gradient-to-tr from-green-600 to-green-400' : 'bg-gradient-to-tr from-pink-600 to-pink-400'} text-white shadow-lg absolute mt-2 grid h-13 w-13 place-items-center`}>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-5 h-5 m-2 text-white">
+                        <path d="M6.25 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM3.25 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM19.75 7.5a.75.75 0 00-1.5 0v2.25H16a.75.75 0 000 1.5h2.25v2.25a.75.75 0 001.5 0v-2.25H22a.75.75 0 000-1.5h-2.25V7.5z"></path>
                       </svg>
                     </div>
                     <div className="p-4 text-right">
@@ -923,9 +765,9 @@ const App: React.FC = () => {
                   onDragStart={(e) => handleDragStart(e, e.currentTarget as HTMLElement)}
                 >
                   <div className="relative flex flex-col bg-clip-border rounded-xl bg-white/80 text-gray-700 shadow-md">
-                    <div className={`bg-clip-border mx-4 rounded-3xl overflow-hidden shadow-[${hexToRgb(task.colour)}] text-white shadow-lg absolute mt-2 grid h-13 w-13 place-items-center`} style={{ backgroundColor: hexToRgb(task.colour), boxShadow: `0px 10px 15px -3px ${hexToRgb(task.colour)}`}}>
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"  strokeWidth="1.5" stroke="currentColor" aria-hidden="true" className="w-5 h-5 m-2 text-white">
-                        <path strokeLinecap="round" strokeLinejoin="round" d={avatarPaths[task.avatar - 1]} />
+                    <div className={`bg-clip-border mx-4 rounded-3xl overflow-hidden ${task.priority === 'high' ? 'bg-gradient-to-tr from-green-600 to-green-400' : 'bg-gradient-to-tr from-pink-600 to-pink-400'} text-white shadow-lg absolute mt-2 grid h-13 w-13 place-items-center`}>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-5 h-5 m-2 text-white">
+                        <path d="M6.25 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM3.25 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM19.75 7.5a.75.75 0 00-1.5 0v2.25H16a.75.75 0 000 1.5h2.25v2.25a.75.75 0 001.5 0v-2.25H22a.75.75 0 000-1.5h-2.25V7.5z"></path>
                       </svg>
                     </div>
                     <div className="p-4 text-right">
@@ -971,9 +813,9 @@ const App: React.FC = () => {
                   onDragStart={(e) => handleDragStart(e, e.currentTarget as HTMLElement)}
                 >
                   <div className="relative flex flex-col bg-clip-border rounded-xl bg-white/80 text-gray-700 shadow-md">
-                    <div className={`bg-clip-border mx-4 rounded-3xl overflow-hidden shadow-[${hexToRgb(task.colour)}] text-white shadow-lg absolute mt-2 grid h-13 w-13 place-items-center`} style={{ backgroundColor: hexToRgb(task.colour), boxShadow: `0px 10px 15px -3px ${hexToRgb(task.colour)}`}}>
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"  strokeWidth="1.5" stroke="currentColor" aria-hidden="true" className="w-5 h-5 m-2 text-white">
-                        <path strokeLinecap="round" strokeLinejoin="round" d={avatarPaths[task.avatar - 1]} />
+                    <div className={`bg-clip-border mx-4 rounded-3xl overflow-hidden ${task.priority === 'high' ? 'bg-gradient-to-tr from-green-600 to-green-400' : 'bg-gradient-to-tr from-pink-600 to-pink-400'} text-white shadow-lg absolute mt-2 grid h-13 w-13 place-items-center`}>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-5 h-5 m-2 text-white">
+                        <path d="M6.25 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM3.25 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM19.75 7.5a.75.75 0 00-1.5 0v2.25H16a.75.75 0 000 1.5h2.25v2.25a.75.75 0 001.5 0v-2.25H22a.75.75 0 000-1.5h-2.25V7.5z"></path>
                       </svg>
                     </div>
                     <div className="p-4 text-right">

@@ -33,8 +33,9 @@ export default function Login() {
 
 	const router = useRouter();
 
-	const Load = async () => {
-		setErrorInfo('');
+    const Load = async () => {
+        setErrorInfo('');
+        setLoadingPassword('');
 
 		const token = localStorage.getItem('token');
 

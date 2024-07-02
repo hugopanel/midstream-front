@@ -1,20 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { url } from 'inspector';
+
 export async function POST(request: NextRequest) {
     try {
-        const { token } = await request.json();
+        const { taskId } = await request.json();
 
-        const response = await fetch('http://localhost:5101/Team/GetProjectByUser', {
+        const url_to_fetch = `http://localhost:5101/Task/GetTaskToEdit?taskId=${taskId}`
+
+        const response = await fetch(url_to_fetch, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
             },
         });
 
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.message || 'Failed to get teams');
+            throw new Error(errorData.message || url_to_fetch);
         }
 
         const data = await response.json();
