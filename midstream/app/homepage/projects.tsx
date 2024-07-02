@@ -1,41 +1,20 @@
 import exp from "constants";
 import { formatDate } from "../format/format";
 import { useEffect, useState } from "react";
+import { fetchProjects } from "../navigation/selectProject";
 
 const maxProjects = 8;
 
 const Projects: React.FC = () => {
 
 	const [projects, setProjects] = useState<Project[]>([]);
-	async function fetchProjects() {
-		try {
-			const token = localStorage.getItem('token');
-      console.log(token);
-      const response = await fetch('/api/projects',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(token),
-        }
-      );
-			const data = await response.json();
-			if (Array.isArray(data.projects)) {
-				let projects = data.projects.sort((a: Project, b: Project) => {
-					return new Date(b.beginning_date).getTime() - new Date(a.beginning_date).getTime();
-				});
-				setProjects(projects.slice(0, maxProjects));
-			} else {
-				console.error('Expected an array but received:', data);
-			}
-		} catch (error) {
-			console.error('Error during fetching projects:', error);
-		}
+	async function initProjects() {
+		const projects = await fetchProjects();
+		setProjects(projects.slice(0, maxProjects));
 	}
 
 	useEffect(() => {
-		fetchProjects();
+		initProjects();
 	}, []);
 
 	return (

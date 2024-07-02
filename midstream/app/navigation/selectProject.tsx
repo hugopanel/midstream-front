@@ -11,31 +11,37 @@ export interface Project {
   name: string;
 }
 
+export const fetchProjects = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch('/api/projects',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token }),
+      }
+    );
+    const data = await response.json();
+    return data.projects || [];
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    return [];
+  }
+}
+
 const SelectProject: React.FC<SelectProjectProps> = ({ selectedProject, setSelectedProject, className }) => {
   const [projects, setProjects] = useState<Project[]>([]);
 
-  const fetchProjects = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/projects',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(token),
-        }
-      );
-      const data = await response.json();
-      setProjects(data.projects || []);
-      setSelectedProject(data.projects[0]);
-    } catch (error) {
-      console.error('Error fetching projects:', error);
-    }
+  const initProjects = async () => {
+    const projects = await fetchProjects();
+    setProjects(projects);
+    setSelectedProject(projects[0]);
   };
 
   useEffect(() => {
-    fetchProjects();
+    initProjects();
   }, []);
 
   useEffect(() => {

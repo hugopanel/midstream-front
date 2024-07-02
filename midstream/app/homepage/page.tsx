@@ -25,7 +25,7 @@ export default function HomePage() {
         <NavBare title="Dashboard" icon={icon} searchBar={<SelectProject selectedProject={selectedProject} setSelectedProject={setSelectedProject} />} />
         <div className="mt-12">
           <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-2 xl:grid-cols-4">
-            <Tasks/>
+            <Tasks projectId={selectedProject.id} />
           </div>
           <div className="mb-4 grid grid-cols-1 gap-6 xl:grid-cols-3">
             <Files selectedProject={selectedProject} />

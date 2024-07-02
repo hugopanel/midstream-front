@@ -27,6 +27,7 @@ const Tasks: React.FC<TasksProps> = (projectId) => {
       });
       const data = await response.json();
       setTasks(data.tasks);
+      console.log(data.tasks);
     } catch (error) {
       console.error('Error during fetching tasks:', error);
     }
