@@ -1,18 +1,17 @@
+import { set } from "date-fns";
+import { se } from "date-fns/locale";
 import { use, useEffect, useState } from "react";
 
 type TasksProps = {
   projectId: string;
 }
 
-const Tasks: React.FC<TasksProps> = (projectId) => {
+const nbMaxTasks = 4;
+
+const Tasks: React.FC<TasksProps> = ({projectId}) => {
   const [tasks, setTasks] = useState<Task[]>([]);
 
   // Liste des tags et leurs couleurs associées 
-  const tags: Tag[] = [
-    { id: 0, name: "Front", color: tagColor.pink },
-    { id: 1, name: "Back", color: tagColor.indigo },
-    { id: 2, name: "Data", color: tagColor.green },
-  ];
 
 
   const fetchTasks = async () => {
@@ -26,8 +25,16 @@ const Tasks: React.FC<TasksProps> = (projectId) => {
         body: JSON.stringify({ projectId, userId }),
       });
       const data = await response.json();
-      setTasks(data.tasks);
-      console.log(data.tasks);
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to get tasks');
+      }
+      console.log(data);
+
+      setTasks(data.tasks.slice(0, nbMaxTasks));
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to get tasks');
+      }
     } catch (error) {
       console.error('Error during fetching tasks:', error);
     }
@@ -40,15 +47,13 @@ const Tasks: React.FC<TasksProps> = (projectId) => {
   return (
     tasks.map((task) => (
       <div key={task.id} className="relative flex flex-col bg-clip-border rounded-xl bg-white text-gray-700 shadow-md">
-        {taskIcon[task.type]}
+        {taskIcon[task.priority]}
         <div className="p-4 text-right">
           <p className="block antialiased font-sans text-sm leading-normal font-normal text-blue-gray-600">{task.status}</p>
           <h4 className="block antialiased tracking-normal font-sans text-2xl font-semibold leading-snug text-blue-gray-900">{task.title}</h4>
         </div>
         <div className="border-t border-blue-gray-50 p-4">
-          {task.tags.map((tag) => (
-            <span key={tag.name} className={`inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ring-1 ring-inset mr-[10px] bg-${tag.color}-50 text-${tag.color}-600 ring-${tag.color}-500/10`}> {tag.name} </span>
-          ))}
+            <span key={task.typeOfTask} className={`inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ring-1 ring-inset mr-[10px] bg-green-50 text-green-600 ring-green-500/10`}> {task.typeOfTask} </span>
         </div>
       </div>
     ))
@@ -56,14 +61,13 @@ const Tasks: React.FC<TasksProps> = (projectId) => {
 }
 export default Tasks;
 interface Task {
-  id: number;
+  id: string;
   title: string;
   description: string;
-  type: taskType;
-  beginning_date: string;
-  end_date: string;
-  tags: Tag[];
-  priority: number;
+  priority: priority;
+  beginningDate: Date;
+  endDate: Date;
+  typeOfTask:string;
   status: taskStatus;
 }
 interface Tag {
@@ -76,22 +80,22 @@ enum tagColor {
   indigo = "indigo",
   green = "green",
 }
-enum taskType {
-  Task = "Task",
-  Feature = "Feature",
-  Bug = "Bug",
-  Improvement = "Improvement",
+enum priority {
+  VeryUrgent = "very urgent",
+  Urgent = "urgent",
+  OnTime = "on time",
+  CanWait = "can wait",
+
 }
 enum taskStatus {
-  InProgress = "In Progress",
-  Ready = "Ready",
-  InReview = "In Review",
+  ToDo = "To do",
+  InProgress = "In progress",
   Done = "Done",
 }
 
 // Liste les logos prédéfinies pour les types de tâches
-const taskIcon: Record<taskType, JSX.Element> = {
-  Task: ( // Logo bleu avec appareil photo
+const taskIcon: Record<priority, JSX.Element> = {
+  "very urgent": ( // Logo bleu avec appareil photo
     <div className="bg-clip-border mx-4 rounded-xl overflow-hidden bg-gradient-to-tr from-blue-600 to-blue-400 text-white shadow-blue-500/40 shadow-lg absolute -mt-7 grid h-16 w-16 place-items-center">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-6 h-6 text-white">
         <path d="M12 7.5a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z"></path>
@@ -101,21 +105,21 @@ const taskIcon: Record<taskType, JSX.Element> = {
     </div>
   ),
 
-  Improvement: ( // Logo violet en forme d'escalier
+  "urgent": ( // Logo violet en forme d'escalier
     <div className="bg-clip-border mx-4 rounded-xl overflow-hidden bg-gradient-to-tr from-indigo-600 to-indigo-400 text-white shadow-indigo-500/40 shadow-lg absolute -mt-7 grid h-16 w-16 place-items-center">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-6 h-6 text-white">
         <path d="M18.375 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.036-.84-1.875-1.875-1.875h-.75zM9.75 8.625c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-.75a1.875 1.875 0 01-1.875-1.875V8.625zM3 13.125c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v6.75c0 1.035-.84 1.875-1.875 1.875h-.75A1.875 1.875 0 013 19.875v-6.75z"></path>
       </svg>
     </div>
   ),
-  Feature: (  // Logo vert avec un bonhomme et un +
+  "on time": (  // Logo vert avec un bonhomme et un +
     <div className="bg-clip-border mx-4 rounded-xl overflow-hidden bg-gradient-to-tr from-green-600 to-green-400 text-white shadow-green-500/40 shadow-lg absolute -mt-7 grid h-16 w-16 place-items-center">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-6 h-6 text-white">
         <path d="M6.25 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM3.25 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM19.75 7.5a.75.75 0 00-1.5 0v2.25H16a.75.75 0 000 1.5h2.25v2.25a.75.75 0 001.5 0v-2.25H22a.75.75 0 000-1.5h-2.25V7.5z"></path>
       </svg>
     </div>
   ),
-  Bug: (  // Logo rose avec un bonhomme
+  "can wait": (  // Logo rose avec un bonhomme
     <div className="bg-clip-border mx-4 rounded-xl overflow-hidden bg-gradient-to-tr from-pink-600 to-pink-400 text-white shadow-pink-500/40 shadow-lg absolute -mt-7 grid h-16 w-16 place-items-center">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-6 h-6 text-white">
         <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd"></path>
