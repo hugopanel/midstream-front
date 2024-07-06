@@ -853,7 +853,7 @@ const App: React.FC = () => {
             </div>
           </div>
         </nav>
-        <div className="mt-7 flex relative ">
+        <div className="mt-7 flex relative items-start">
           <div
             id="dp1"
             className="drop flex-1 bg-white/10 rounded-lg shadow-lg p-5 space-y-2 mr-2"
@@ -861,7 +861,7 @@ const App: React.FC = () => {
             <h2 className="text-xl font-bold mb-2 ml-3">To Do</h2>
             <div
               id="To do"
-              className="drop flex-1 p-3 space-y-2 min-h-[460px]"
+              className="drop flex-1 p-3 space-y-2 min-h-[460px] h-fit"
               ref={dp1Ref}
               onDragOver={(e) => handleDragOver(e, dp1Ref)}
               onDrop={(e) => handleDrop(e, dp1Ref)}>
