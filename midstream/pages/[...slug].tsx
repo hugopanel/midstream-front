@@ -1,4 +1,7 @@
 // Catch-all route for dynamic module routes
+"use client";
+
+import "../app/globals.css";
 
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
