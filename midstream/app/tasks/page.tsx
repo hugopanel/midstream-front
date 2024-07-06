@@ -485,7 +485,7 @@ const App: React.FC = () => {
             </div>
           </div>
         </nav>
-        <div className="mt-7 flex relative ">
+        <div className="mt-7 flex relative items-start">
           <div
             id="dp1"
             className="drop flex-1 bg-white/10 rounded-lg shadow-lg p-5 space-y-2 mr-2"
@@ -576,7 +576,7 @@ const App: React.FC = () => {
           >
             <h2 className="text-xl font-bold mb-2 ml-3">In Progress</h2>
             <div
-              className="drop flex-1 p-3 space-y-2 min-h-[460px]"
+              className="drop flex-1 p-3 space-y-2 min-h-[460px] h-fit"
               ref={dp2Ref}
               onDragOver={(e) => handleDragOver(e, dp2Ref)}
               onDrop={(e) => handleDrop(e, dp2Ref)}>
@@ -597,9 +597,10 @@ const App: React.FC = () => {
                 Item5
               </div>
             </div>
-            <button className="text-lg font-semibold mb-2 pt-2 mt-2 flex items-center bottom-0"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="h-5 w-5 text-white font-semibold">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
+            <button className="text-lg font-semibold mb-2 pt-2 mt-2 flex items-center bottom-0">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="h-5 w-5 text-white font-semibold">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
               Add Task
             </button>
           </div>
