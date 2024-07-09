@@ -1,6 +1,7 @@
-import { set } from "date-fns";
-import { se } from "date-fns/locale";
 import { use, useEffect, useState } from "react";
+
+import { se } from "date-fns/locale";
+import { set } from "date-fns";
 
 type TasksProps = {
   projectId: string;
@@ -53,7 +54,7 @@ const Tasks: React.FC<TasksProps> = ({projectId}) => {
           <h4 className="block antialiased tracking-normal font-sans text-2xl font-semibold leading-snug text-blue-gray-900">{task.title}</h4>
         </div>
         <div className="border-t border-blue-gray-50 p-4">
-            <span key={task.typeOfTask} className={`inline-flex capitalize items-center rounded-md px-4 py-2 text-sm font-medium ring-1 ring-inset mr-[10px] bg-green-50 text-green-600 ring-green-500/10`}> {task.typeOfTask} </span>
+            <span key={task.typeOfTask} className={`inline-flex capitalize items-center rounded-md px-4 py-2 text-sm font-medium ring-1 ring-inset mr-[10px] bg-${task.typeOfTask === 'Bug' ? 'pink' : task.typeOfTask === 'Feature' ? 'indigo' : 'green'}-50 text-${task.typeOfTask === 'Bug' ? 'pink' : task.typeOfTask === 'Feature' ? 'indigo' : 'green'}-600 ring-${task.typeOfTask === 'Bug' ? 'pink' : task.typeOfTask === 'Feature' ? 'indigo' : 'green'}-500/10`}> {task.typeOfTask} </span>
         </div>
       </div>
     ))
