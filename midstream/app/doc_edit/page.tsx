@@ -42,6 +42,7 @@ const postUpdateDocument = async (documentId:string, title: string, project: Pro
             date
         }),
     });
+    
     return response.json();
 }
 

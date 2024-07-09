@@ -31,13 +31,22 @@ export default function DocExplorer() {
     const [submitSearch, setSubmitSearch] = useState<string>('');
     const [search, setSearch] = useState<string>('');
     function fetchDocuments() {
-        const docs: Document[] =
+        const userName = localStorage.getItem('userName');
+        var docs: Document[] =
             Array.from({ length: 100 }, (_, i) => ({
                 name: `Document ${i + 1}`,
                 date: new Date(),
-                uploadedBy: `User ${i + 1}`,
+                uploadedBy: userName || 'Admin',
                 id: `${i + 1}`,
             }));
+        docs[0].name = 'Description Midstream Project';
+        docs[1].name = 'Midstream Project Plan';
+        docs[2].name = 'Midstream Project Budget';
+        docs[3].name = 'Midstream Project Schedule';
+        docs[4].name = 'Midstream Project Risk Management Plan';
+        docs[5].name = 'Midstream Project Quality Management Plan';
+        docs[6].name = 'Midstream Project Communication Management Plan';
+
         setDocuments(docs);
     }
 
