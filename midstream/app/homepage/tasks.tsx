@@ -46,14 +46,14 @@ const Tasks: React.FC<TasksProps> = ({projectId}) => {
   },[projectId]);
   return (
     tasks.map((task) => (
-      <div key={task.id} className="relative flex flex-col bg-clip-border rounded-xl bg-white text-gray-700 shadow-md">
+      <div key={task.id} className="relative capitalize flex flex-col bg-clip-border rounded-xl bg-white text-gray-700 shadow-md">
         {taskIcon[task.priority]}
         <div className="p-4 text-right">
           <p className="block antialiased font-sans text-sm leading-normal font-normal text-blue-gray-600">{task.status}</p>
           <h4 className="block antialiased tracking-normal font-sans text-2xl font-semibold leading-snug text-blue-gray-900">{task.title}</h4>
         </div>
         <div className="border-t border-blue-gray-50 p-4">
-            <span key={task.typeOfTask} className={`inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ring-1 ring-inset mr-[10px] bg-green-50 text-green-600 ring-green-500/10`}> {task.typeOfTask} </span>
+            <span key={task.typeOfTask} className={`inline-flex capitalize items-center rounded-md px-4 py-2 text-sm font-medium ring-1 ring-inset mr-[10px] bg-green-50 text-green-600 ring-green-500/10`}> {task.typeOfTask} </span>
         </div>
       </div>
     ))
