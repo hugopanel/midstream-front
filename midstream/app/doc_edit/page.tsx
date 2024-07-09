@@ -145,7 +145,7 @@ export default function DocEdit() {
                     <button>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-                        </svg>
+                        </svg> 
                     </button>
                 </Link>
                 <h2 className="text-xl ml-3">mid<b>stream</b></h2>
@@ -157,7 +157,7 @@ export default function DocEdit() {
                 </div>
             </div>
 
-            <div className="flex flex-col bg-white text-black p-4">
+            <div className="flex flex-col bg-white text-black p-4 pl-20 pr-20">
                 <div className="inset-0 p-8 pt-0 pb-0 grid grid-cols-12 ">
                     <div className="col-span-2"></div>
                     <div className="col-span-8">

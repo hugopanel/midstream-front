@@ -113,7 +113,7 @@ const SectionsComponent: React.FC<SectionsComponentProps> = ({ sections, setSect
               }
               <div
                 id='section'
-                className={`block relative border-r-0  ${section.type == SectionType.Reference ? 'border-l-blue-400' : (section.type == SectionType.Referenced ? 'border-l-yellow-300' : 'border-l-gray-300')} rounded focus:outline-none focus:ring-0  transition border ${hoveredIndex === index ? 'border-gray-300 border-l-8' : 'border-transparent border-l-0'}`}
+                className={`block relative   ${section.type == SectionType.Reference ? 'border-l-blue-400' : (section.type == SectionType.Referenced ? 'border-l-yellow-300' : 'border-l-gray-300')} rounded focus:outline-none focus:ring-0  transition border ${hoveredIndex === index ? 'border-l-8' : `border-0 ${((section.type == SectionType.Referenced) || (section.type ==  SectionType.Reference))?'border-l-8' : 'border-l-0'}`}`}
                 style={{ transition: 'border 0.3s ease-in-out' }}
                 onMouseEnter={() => !isParentDisabeled && setHoveredIndex(index)}
                 onMouseLeave={() => !isParentDisabeled && setHoveredIndex(null)}
